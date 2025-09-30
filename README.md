@@ -1,28 +1,27 @@
 # ⚽ FC 26 League - Système NBA FIFA
 
-Une application web moderne pour gérer une ligue FIFA avec système NBA : 5 joueurs, 4 matchs par semaine, classements hebdomadaires et cumulés.
+Une application web de gestion de ligue FIFA avec système NBA pour 5 joueurs.
 
-## 🎮 **Fonctionnalités**
+## 🏆 Fonctionnalités
 
-- **👥 5 Joueurs Fixes** : ABOUBACAR, DIOGO, LIONEL, CHERIF, ELI
-- **📅 Système de Semaines** : Chaque joueur joue 4 matchs par semaine
-- **🏆 Double Classement** : Hebdomadaire + Cumulé depuis le début
-- **⚽ Moyenne de Buts** : Intégrée dans le calcul des classements
-- **💾 Persistance** : Base de données SQLite avec historique complet
-- **📱 Interface Responsive** : Compatible mobile et desktop
-- **🎨 Design Moderne** : Interface glassmorphism avec animations
+- **👥 5 Joueurs fixes** : ABOUBACAR, DIOGO, LIONEL, CHERIF, ELI
+- **📅 Système de semaines** : 4 matchs par joueur par semaine
+- **📊 Double classement** : Hebdomadaire et cumulé depuis le début
+- **⚽ Moyenne de buts** : Intégrée dans le calcul des classements
+- **💾 Persistance** : Toutes les données sont sauvegardées automatiquement
+- **📱 Interface responsive** : Moderne avec design glassmorphism
 
-## 🚀 **Installation Rapide**
+## 🚀 Installation Locale
 
 ### Prérequis
-- Python 3.7+
-- Git
+- Python 3.8+
+- pip
 
 ### Installation
 ```bash
-# Cloner le repository
-git clone [URL_DU_REPO]
-cd PROJET-FIFA
+# Cloner le projet
+git clone https://github.com/VOTRE-USERNAME/fc26-league.git
+cd fc26-league
 
 # Installer les dépendances
 pip install -r requirements.txt
@@ -32,41 +31,29 @@ python app.py
 ```
 
 ### Accès
-- **Local** : `http://localhost:8000`
-- **Réseau** : `http://[VOTRE_IP]:8000`
+- Local: http://localhost:8000
+- Réseau: http://[VOTRE-IP]:8000
 
-## 📱 **Utilisation**
+## 📋 Comment jouer
 
-### Première Configuration
-1. **Ajoutez vos joueurs** via "Gérer Joueurs"
-2. **Générez une semaine** avec "Générer Semaine"
-3. **Saisissez les scores** directement sur l'accueil
-4. **Consultez les classements** en temps réel
+1. **Gérer les joueurs** : Les 5 joueurs sont pré-configurés
+2. **Générer une semaine** : Crée 10 matchs automatiquement (4 par joueur)
+3. **Saisir les résultats** : Directement sur la page d'accueil
+4. **Voir les classements** : Hebdomadaire et cumulé en temps réel
+5. **Passer à la semaine suivante** : Une fois tous les matchs terminés
 
-### Navigation
-- 🏠 **Accueil** : Vue d'ensemble et saisie des matchs
-- 👥 **Gérer Joueurs** : Activation/désactivation des 5 joueurs
-- 🏆 **Classements** : Hebdomadaires et cumulés détaillés
-- 📚 **Historique** : Archive de toutes les saisons
+## 🎯 Système NBA
 
-## 🏆 **Système de Classement**
+- **5 joueurs maximum** actifs simultanément
+- **4 matchs par joueur** par semaine
+- **Classement par points** : Victoire = 3pts, Nul = 1pt, Défaite = 0pt
+- **Moyenne de buts** : Critère de départage secondaire
+- **Historique complet** : Toutes les saisons sont archivées
 
-### Points
-- **Victoire** : 3 points
-- **Match nul** : 1 point  
-- **Défaite** : 0 point
-
-### Critères de Tri
-1. **Points** (priorité 1)
-2. **Moyenne de buts** (priorité 2)
-3. **Différence de buts** (priorité 3)
-
-## 💾 **Sauvegarde des Données**
+## 💾 Sauvegarde
 
 ### Automatique
-- Toutes les données sont sauvegardées automatiquement
-- Base SQLite dans `instance/fifa25.db`
-- Historique complet conservé indéfiniment
+Toutes les données sont automatiquement sauvegardées dans `instance/fifa25.db`
 
 ### Manuelle
 ```bash
@@ -77,108 +64,96 @@ python backup_db.py backup
 python backup_db.py list
 
 # Restaurer une sauvegarde
-python backup_db.py restore [fichier]
+python backup_db.py restore <fichier>
 ```
 
-## 🌐 **Accès Réseau/Mobile**
-
-### Configuration Réseau
-L'application écoute sur `0.0.0.0:8000` permettant l'accès depuis :
-- **Même réseau WiFi** : `http://[IP_DU_PC]:8000`
-- **Mobile** : Connecté au même WiFi
-- **Autres appareils** : Sur le même réseau local
-
-### Trouver votre IP
-```bash
-# Windows
-ipconfig
-
-# Cherchez "Adresse IPv4" de votre connexion WiFi
-```
-
-## 📁 **Structure du Projet**
+## 📁 Structure du Projet
 
 ```
-PROJET FIFA/
-├── app.py                 # Application principale Flask
-├── requirements.txt       # Dépendances Python
+fc26-league/
+├── app.py                 # Application Flask principale
 ├── backup_db.py          # Script de sauvegarde
-├── instance/             # Base de données (non versionné)
-│   └── fifa25.db
-├── templates/            # Templates HTML
+├── requirements.txt      # Dépendances Python
+├── instance/            # Base de données
+│   └── fifa25.db       
+├── templates/           # Templates HTML
 │   ├── base.html
 │   ├── home.html
 │   ├── manage_players.html
 │   ├── standings.html
 │   └── season_history.html
-├── backups/              # Sauvegardes (non versionné)
-└── DATA_PERSISTENCE.md   # Documentation persistance
+├── backups/            # Sauvegardes automatiques
+└── DATA_PERSISTENCE.md # Documentation persistance
 ```
 
-## 🔧 **Configuration**
+## 🛠️ Technologies
 
-### Port personnalisé
-Modifiez dans `app.py` ligne 646 :
-```python
-app.run(debug=True, host='0.0.0.0', port=VOTRE_PORT)
-```
+- **Backend** : Flask (Python)
+- **Base de données** : SQLite
+- **Frontend** : HTML5, CSS3, JavaScript
+- **Design** : Glassmorphism, CSS Grid/Flexbox
+- **Icons** : Font Awesome
 
-### Joueurs personnalisés
-Modifiez dans `app.py` la fonction `initialize_default_players()` :
-```python
-default_players = ['NOM1', 'NOM2', 'NOM3', 'NOM4', 'NOM5']
-```
+## 🔧 Configuration
 
-## 🐛 **Dépannage**
-
-### L'application ne démarre pas
+### Variables d'environnement
 ```bash
-# Vérifier la syntaxe
-python -c "import app; print('OK')"
-
-# Vérifier le port
-netstat -an | findstr :8000
+# Pour la production
+export FLASK_ENV=production
+export SECRET_KEY=votre-clé-secrète-très-sécurisée
 ```
 
-### Problèmes de connexion
-- Vérifiez le pare-feu Windows
-- Essayez `http://127.0.0.1:8000`
-- Redémarrez en mode navigation privée
+### Base de données
+L'application utilise SQLite par défaut. Pour PostgreSQL :
+```python
+# Dans app.py
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://user:password@host:port/database'
+```
 
-### Perte de données
+## 📊 Base de Données
+
+### Tables principales
+- **Player** : Joueurs de la ligue
+- **Season** : Saisons avec statut actif/terminé  
+- **Match** : Tous les matchs avec scores
+- **WeeklyStandings** : Classements hebdomadaires archivés
+
+## 🌐 Déploiement
+
+### Heroku
+1. Créer un compte Heroku
+2. Installer Heroku CLI
+3. Suivre les instructions dans `DEPLOY.md`
+
+### Vercel/Netlify
+Compatible avec les plateformes serverless (voir documentation déploiement)
+
+### VPS/Serveur
 ```bash
-# Restaurer une sauvegarde
-python backup_db.py list
-python backup_db.py restore [fichier_backup]
+# Avec gunicorn
+pip install gunicorn
+gunicorn app:app
 ```
 
-## 📱 **Optimisation Mobile**
+## 🤝 Contributeurs
 
-- Interface responsive automatique
-- Boutons tactiles optimisés
-- Navigation simplifiée sur petit écran
-- Saisie des scores facilitée
+- **ABOUBACAR** - Joueur FC 26
+- **DIOGO** - Joueur FC 26  
+- **LIONEL** - Joueur FC 26
+- **CHERIF** - Joueur FC 26
+- **ELI** - Joueur FC 26
 
-## 🤝 **Contribution**
+## 📝 Licence
 
-1. Fork le projet
-2. Créez une branche (`git checkout -b feature/nouvelle-fonctionnalite`)
-3. Commit (`git commit -am 'Ajout nouvelle fonctionnalité'`)
-4. Push (`git push origin feature/nouvelle-fonctionnalite`)
-5. Créez une Pull Request
+Ce projet est sous licence MIT. Voir `LICENSE` pour plus de détails.
 
-## 📄 **Licence**
+## 🐛 Support
 
-Projet personnel - FC 26 League
-
-## 👥 **Équipe**
-
-- **ABOUBACAR**
-- **DIOGO**
-- **LIONEL**
-- **CHERIF**
-- **ELI**
+Pour tout problème ou suggestion :
+1. Ouvrir une issue sur GitHub
+2. Consulter `DATA_PERSISTENCE.md` pour la gestion des données
+3. Utiliser les outils de sauvegarde intégrés
 
 ---
 
-**⚽ Bonne chance pour votre FC 26 League ! 🏆**
+**🏆 Que le meilleur gagne ! Bonne chance à tous les joueurs FC 26 ! ⚽**

@@ -1,10 +1,4 @@
-# Base de données (à exclure pour la sécurité)
-instance/
-*.db
-*.sqlite
-*.sqlite3
-
-# Environnement Python
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -22,13 +16,15 @@ parts/
 sdist/
 var/
 wheels/
-share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-MANIFEST
 
-# Environnements virtuels
+# Flask
+instance/
+.webassets-cache
+
+# Environment variables
 .env
 .venv
 env/
@@ -56,14 +52,13 @@ Thumbs.db
 # Logs
 *.log
 
-# Sauvegardes locales
-backups/
-*.backup
+# Database (pour development)
+# instance/*.db
 
-# Configuration locale
-config.py
-.env.local
+# Backup files
+backups/*.db
+backups/*.json
 
-# Fichiers temporaires
+# Temporary files
 *.tmp
 *.temp

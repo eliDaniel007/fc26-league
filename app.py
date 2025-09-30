@@ -3,11 +3,24 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
 import random
 import math
+import os
 from collections import defaultdict
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'votre_clé_secrète'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///fifa25.db'
+
+# Configuration pour la production et le développement
+if os.environ.get('FLASK_ENV') == 'production':
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'fallback-key-change-in-production')
+    database_url = os.environ.get('DATABASE_URL')
+    if database_url and database_url.startswith('postgres://'):
+        database_url = database_url.replace('postgres://', 'postgresql://', 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url or 'sqlite:///fifa25.db'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+else:
+    app.config['SECRET_KEY'] = 'votre_clé_secrète'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/fifa25.db'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 db = SQLAlchemy(app)
 
 @app.context_processor
@@ -566,11 +579,11 @@ def calculate_cumulative_standings(season_id):
         for match in matches_p1:
             goals_for += match.player1_score
             goals_against += match.player2_score
-    if match.player1_score > match.player2_score:
+            if match.player1_score > match.player2_score:
                 wins += 1
             elif match.player1_score == match.player2_score:
                 draws += 1
-    else:
+            else:
                 losses += 1
         
         for match in matches_p2:
@@ -580,7 +593,7 @@ def calculate_cumulative_standings(season_id):
                 wins += 1
             elif match.player2_score == match.player1_score:
                 draws += 1
-        else:
+            else:
                 losses += 1
         
         matches_played = len(matches_p1) + len(matches_p2)
@@ -637,16 +650,19 @@ def update_weekly_standings(season_id, week_number):
     db.session.commit()
 
 if __name__ == '__main__':
-    import os
     with app.app_context():
         # Crée la base de données seulement si elle n'existe pas
         db.create_all()
         print("⚽ FC 26 League démarrée !")
         print("📊 Base de données prête - vos données sont persistantes !")
-        print("🌐 Accès local: http://localhost:8000")
-        print("📱 Accès réseau: http://[VOTRE_IP]:8000")
-        print("💡 Trouvez votre IP avec: ipconfig (Windows)")
-    
-    # Port pour Render (ou 8000 par défaut)
-    port = int(os.environ.get('PORT', 8000))
-    app.run(debug=False, host='0.0.0.0', port=port)
+        
+        # Port et host pour développement vs production
+        port = int(os.environ.get('PORT', 8000))
+        debug_mode = os.environ.get('FLASK_ENV') != 'production'
+        
+        if debug_mode:
+            print(f"🌐 Accès local: http://localhost:{port}")
+            print(f"📱 Accès réseau: http://[VOTRE_IP]:{port}")
+            print("💡 Trouvez votre IP avec: ipconfig (Windows)")
+        
+    app.run(debug=debug_mode, host='0.0.0.0', port=port)
