@@ -642,5 +642,7 @@ if __name__ == '__main__':
         db.create_all()
         print("⚽ FC 26 League démarrée !")
         print("📊 Base de données prête - vos données sont persistantes !")
-        print("🌐 Accédez à: http://localhost:8000")
+        print("🌐 Accès local: http://localhost:8000")
+        print("📱 Accès réseau: http://[VOTRE_IP]:8000")
+        print("💡 Trouvez votre IP avec: ipconfig (Windows)")
     app.run(debug=True, host='0.0.0.0', port=8000)
