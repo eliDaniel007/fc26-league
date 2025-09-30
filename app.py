@@ -17,7 +17,7 @@ if os.environ.get('FLASK_ENV') == 'production':
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url or 'sqlite:///fifa25.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 else:
-    app.config['SECRET_KEY'] = 'votre_clé_secrète'
+app.config['SECRET_KEY'] = 'votre_clé_secrète'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/fifa25.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -97,7 +97,7 @@ def home():
         season = Season(name=f"Saison FC 26 {datetime.now().year}")
         db.session.add(season)
         db.session.commit()
-        
+    
         # Initialiser les 5 joueurs si c'est une nouvelle saison
         initialize_default_players()
     
@@ -362,7 +362,7 @@ def new_season():
         status='in_progress'
     )
     db.session.add(new_season)
-    db.session.commit()
+        db.session.commit()
     
     flash(f'🎉 Nouvelle saison créée : {new_season.name}', 'success')
     return redirect(url_for('home'))
@@ -401,7 +401,7 @@ def update_player_names():
                 if not existing_new_player:
                     player.name = new_name
                     updated_count += 1
-                else:
+    else:
                     # Si le nouveau nom existe déjà, supprimer l'ancien
                     db.session.delete(player)
         
@@ -579,11 +579,11 @@ def calculate_cumulative_standings(season_id):
         for match in matches_p1:
             goals_for += match.player1_score
             goals_against += match.player2_score
-            if match.player1_score > match.player2_score:
+    if match.player1_score > match.player2_score:
                 wins += 1
             elif match.player1_score == match.player2_score:
                 draws += 1
-            else:
+    else:
                 losses += 1
         
         for match in matches_p2:
@@ -593,7 +593,7 @@ def calculate_cumulative_standings(season_id):
                 wins += 1
             elif match.player2_score == match.player1_score:
                 draws += 1
-            else:
+        else:
                 losses += 1
         
         matches_played = len(matches_p1) + len(matches_p2)

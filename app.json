@@ -1,0 +1,31 @@
+{
+  "name": "FC 26 League",
+  "description": "⚽ Système NBA FIFA pour 5 joueurs avec classements hebdomadaires et cumulés",
+  "repository": "https://github.com/eliDaniel007/fc26-league",
+  "logo": "https://cdn-icons-png.flaticon.com/512/53/53283.png",
+  "keywords": ["fifa", "football", "league", "nba-system", "flask", "python"],
+  "image": "heroku/python",
+  "env": {
+    "FLASK_ENV": {
+      "description": "Flask environment",
+      "value": "production",
+      "required": true
+    },
+    "SECRET_KEY": {
+      "description": "Secret key for session management",
+      "generator": "secret",
+      "required": true
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "eco"
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ]
+}
