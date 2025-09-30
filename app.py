@@ -566,11 +566,11 @@ def calculate_cumulative_standings(season_id):
         for match in matches_p1:
             goals_for += match.player1_score
             goals_against += match.player2_score
-            if match.player1_score > match.player2_score:
+    if match.player1_score > match.player2_score:
                 wins += 1
             elif match.player1_score == match.player2_score:
                 draws += 1
-            else:
+    else:
                 losses += 1
         
         for match in matches_p2:
@@ -580,7 +580,7 @@ def calculate_cumulative_standings(season_id):
                 wins += 1
             elif match.player2_score == match.player1_score:
                 draws += 1
-            else:
+        else:
                 losses += 1
         
         matches_played = len(matches_p1) + len(matches_p2)
@@ -637,6 +637,7 @@ def update_weekly_standings(season_id, week_number):
     db.session.commit()
 
 if __name__ == '__main__':
+    import os
     with app.app_context():
         # Crée la base de données seulement si elle n'existe pas
         db.create_all()
@@ -645,4 +646,7 @@ if __name__ == '__main__':
         print("🌐 Accès local: http://localhost:8000")
         print("📱 Accès réseau: http://[VOTRE_IP]:8000")
         print("💡 Trouvez votre IP avec: ipconfig (Windows)")
-    app.run(debug=True, host='0.0.0.0', port=8000)
+    
+    # Port pour Render (ou 8000 par défaut)
+    port = int(os.environ.get('PORT', 8000))
+    app.run(debug=False, host='0.0.0.0', port=port)
