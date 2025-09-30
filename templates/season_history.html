@@ -1,0 +1,291 @@
+{% extends "base.html" %}
+
+{% block title %}Historique des Saisons - FC 26{% endblock %}
+
+{% block header_title %}📚 Historique des Saisons FC 26 📚{% endblock %}
+
+{% block content %}
+<div class="glass-card">
+    <h2 style="color: var(--fc-electric-blue); font-size: 2rem; margin-bottom: 1rem; text-align: center;">
+        <i class="fas fa-history"></i>
+        Archive des Saisons FC 26
+    </h2>
+    <p style="text-align: center; color: rgba(255, 255, 255, 0.8); margin-bottom: 2rem;">
+        Consultez l'historique complet de toutes vos saisons et leurs statistiques.
+    </p>
+</div>
+
+<!-- Actions pour créer une nouvelle saison -->
+<div class="glass-card">
+    <h3 style="color: var(--fc-neon-green); font-size: 1.5rem; margin-bottom: 1rem; text-align: center;">
+        <i class="fas fa-plus-circle"></i> Gestion des Saisons
+    </h3>
+    
+    <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+        {% if active_season %}
+        <div style="text-align: center; padding: 1rem; background: rgba(0, 255, 136, 0.1); border-radius: 15px; border: 2px solid var(--fc-neon-green);">
+            <h4 style="color: var(--fc-neon-green); margin-bottom: 0.5rem;">Saison Active</h4>
+            <p style="color: white; margin: 0.5rem 0; font-size: 1.1rem; font-weight: bold;">{{ active_season.name }}</p>
+            <p style="color: var(--fc-electric-blue); margin: 0; font-size: 0.9rem;">
+                Semaine {{ active_season.current_week }} • Depuis le {{ active_season.start_date.strftime('%d/%m/%Y') }}
+            </p>
+        </div>
+        
+        <a href="{{ url_for('new_season') }}" 
+           class="btn btn-gold" 
+           style="height: fit-content; padding: 1rem 2rem;"
+           onclick="return confirm('Terminer la saison actuelle et créer une nouvelle saison ?')">
+            <i class="fas fa-trophy"></i>
+            Créer Nouvelle Saison
+        </a>
+        {% else %}
+        <a href="{{ url_for('new_season') }}" 
+           class="btn btn-primary" 
+           style="padding: 1rem 2rem;">
+            <i class="fas fa-play"></i>
+            Démarrer Première Saison
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Liste des saisons -->
+<div class="glass-card">
+    <h3 style="color: var(--fc-plasma-pink); font-size: 1.5rem; margin-bottom: 1.5rem;">
+        <i class="fas fa-list"></i> Toutes les Saisons ({{ seasons|length }})
+    </h3>
+    
+    {% if seasons %}
+    <div style="space-y: 1rem;">
+        {% for season in seasons %}
+        <div style="background: {% if season.is_active %}linear-gradient(45deg, rgba(0, 255, 136, 0.1), rgba(0, 212, 255, 0.1)){% else %}rgba(255, 255, 255, 0.05){% endif %}; 
+                    border: 2px solid {% if season.is_active %}var(--fc-neon-green){% else %}rgba(255, 255, 255, 0.2){% endif %}; 
+                    border-radius: 15px; padding: 1.5rem; margin-bottom: 1rem;
+                    transition: all 0.3s ease;" 
+             onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 25px rgba(0, 0, 0, 0.2)'"
+             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+            
+            <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 2rem; align-items: center;">
+                <!-- Infos de la saison -->
+                <div>
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                        <div style="width: 50px; height: 50px; 
+                                    background: {% if season.is_active %}linear-gradient(45deg, var(--fc-neon-green), var(--fc-electric-blue)){% else %}linear-gradient(45deg, var(--fc-silver), var(--fc-carbon)){% endif %}; 
+                                    border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-{% if season.is_active %}play{% else %}trophy{% endif %}" style="color: white; font-size: 1.5rem;"></i>
+                        </div>
+                        <div>
+                            <h4 style="color: {% if season.is_active %}var(--fc-neon-green){% else %}white{% endif %}; margin: 0; font-size: 1.3rem;">
+                                {{ season.name }}
+                                {% if season.is_active %}
+                                <span style="background: var(--fc-neon-green); color: black; padding: 0.2rem 0.5rem; border-radius: 10px; font-size: 0.7rem; margin-left: 0.5rem;">ACTIVE</span>
+                                {% endif %}
+                            </h4>
+                            <p style="color: rgba(255, 255, 255, 0.7); margin: 0; font-size: 0.9rem;">
+                                <i class="fas fa-calendar"></i> 
+                                Du {{ season.start_date.strftime('%d/%m/%Y') }}
+                                {% if not season.is_active %} • Terminée{% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Statistiques de la saison -->
+                <div style="text-align: center;">
+                    {% if season.is_active %}
+                    <div style="color: var(--fc-electric-blue); font-size: 1.5rem; font-weight: bold; margin-bottom: 0.2rem;">
+                        {{ season.current_week }}
+                    </div>
+                    <div style="color: white; font-size: 0.8rem;">Semaine en cours</div>
+                    {% else %}
+                    <div style="color: var(--fc-silver); font-size: 1.5rem; font-weight: bold; margin-bottom: 0.2rem;">
+                        {{ season.current_week - 1 if season.current_week > 1 else season.current_week }}
+                    </div>
+                    <div style="color: white; font-size: 0.8rem;">Semaines jouées</div>
+                    {% endif %}
+                </div>
+                
+                <!-- Actions -->
+                <div style="display: flex; flex-direction: column; gap: 0.5rem; align-items: end;">
+                    {% if season.is_active %}
+                    <a href="{{ url_for('home') }}" 
+                       class="btn btn-primary" 
+                       style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                        <i class="fas fa-play"></i> Continuer
+                    </a>
+                    {% endif %}
+                    
+                    <button class="btn" 
+                            style="background: linear-gradient(45deg, var(--fc-cyber-purple), var(--fc-plasma-pink)); 
+                                   color: white; padding: 0.5rem 1rem; font-size: 0.9rem;"
+                            onclick="showSeasonDetails({{ season.id }}, '{{ season.name }}')">
+                        <i class="fas fa-eye"></i> Détails
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Détails cachés de la saison -->
+            <div id="season-details-{{ season.id }}" style="display: none; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.2);">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; text-align: center;">
+                    {% set season_matches = season.matches if season.matches else [] %}
+                    {% set total_matches = season_matches | length %}
+                    {% set completed_matches = season_matches | selectattr('is_completed') | list %}
+                    {% set total_goals = completed_matches | sum(attribute='player1_score') + completed_matches | sum(attribute='player2_score') %}
+                    
+                    <div>
+                        <div style="color: var(--fc-neon-green); font-size: 1.2rem; font-weight: bold;">{{ completed_matches | length }}</div>
+                        <div style="color: white; font-size: 0.8rem;">Matchs joués</div>
+                    </div>
+                    
+                    <div>
+                        <div style="color: var(--fc-electric-blue); font-size: 1.2rem; font-weight: bold;">{{ total_goals or 0 }}</div>
+                        <div style="color: white; font-size: 0.8rem;">Buts marqués</div>
+                    </div>
+                    
+                    <div>
+                        <div style="color: var(--fc-cyber-purple); font-size: 1.2rem; font-weight: bold;">
+                            {{ "%.1f"|format(total_goals / (completed_matches | length)) if (completed_matches | length) > 0 else "0.0" }}
+                        </div>
+                        <div style="color: white; font-size: 0.8rem;">Moy./match</div>
+                    </div>
+                    
+                    <div>
+                        <div style="color: var(--fc-gold); font-size: 1.2rem; font-weight: bold;">
+                            {{ ((completed_matches | length) / total_matches * 100) | round(1) if total_matches > 0 else 0 }}%
+                        </div>
+                        <div style="color: white; font-size: 0.8rem;">Progression</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    {% else %}
+    <div style="text-align: center; padding: 3rem; background: rgba(255, 20, 147, 0.1); border-radius: 15px; border: 2px dashed var(--fc-plasma-pink);">
+        <i class="fas fa-calendar-times" style="font-size: 3rem; color: var(--fc-plasma-pink); margin-bottom: 1rem;"></i>
+        <h4 style="color: var(--fc-plasma-pink); margin-bottom: 0.5rem;">Aucune saison trouvée</h4>
+        <p style="color: rgba(255, 255, 255, 0.6); margin-bottom: 1.5rem;">Créez votre première saison FC 26 !</p>
+        <a href="{{ url_for('new_season') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Créer Première Saison
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Statistiques globales -->
+{% if seasons %}
+<div class="glass-card">
+    <h3 style="color: var(--fc-cyber-purple); font-size: 1.5rem; margin-bottom: 1.5rem; text-align: center;">
+        <i class="fas fa-chart-bar"></i> Statistiques Globales
+    </h3>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+        <div style="text-align: center; padding: 1.5rem; background: rgba(0, 212, 255, 0.1); border-radius: 15px; border: 2px solid var(--fc-electric-blue);">
+            <div style="font-size: 2.5rem; color: var(--fc-electric-blue); margin-bottom: 0.5rem;">
+                {{ seasons | length }}
+            </div>
+            <div style="color: white; font-weight: 600;">Saisons Créées</div>
+        </div>
+        
+        <div style="text-align: center; padding: 1.5rem; background: rgba(0, 255, 136, 0.1); border-radius: 15px; border: 2px solid var(--fc-neon-green);">
+            <div style="font-size: 2.5rem; color: var(--fc-neon-green); margin-bottom: 0.5rem;">
+                {{ (seasons | selectattr('is_active', 'equalto', false) | list | length) }}
+            </div>
+            <div style="color: white; font-weight: 600;">Saisons Terminées</div>
+        </div>
+        
+        <div style="text-align: center; padding: 1.5rem; background: rgba(255, 215, 0, 0.1); border-radius: 15px; border: 2px solid var(--fc-gold);">
+            <div style="font-size: 2.5rem; color: var(--fc-gold); margin-bottom: 0.5rem;">
+                {% set total_weeks = seasons | sum(attribute='current_week') - seasons | length %}
+                {{ total_weeks if total_weeks > 0 else 0 }}
+            </div>
+            <div style="color: white; font-weight: 600;">Semaines Jouées</div>
+        </div>
+        
+        <div style="text-align: center; padding: 1.5rem; background: rgba(138, 43, 226, 0.1); border-radius: 15px; border: 2px solid var(--fc-cyber-purple);">
+            <div style="font-size: 2.5rem; color: var(--fc-cyber-purple); margin-bottom: 0.5rem;">
+                {{ seasons | selectattr('is_active', 'equalto', true) | list | length }}
+            </div>
+            <div style="color: white; font-weight: 600;">Saisons Actives</div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Aide -->
+<div class="glass-card">
+    <h3 style="color: var(--fc-neon-orange); font-size: 1.5rem; margin-bottom: 1rem;">
+        <i class="fas fa-question-circle"></i> Gestion des Saisons
+    </h3>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+        <div style="padding: 1rem; background: rgba(0, 212, 255, 0.05); border-left: 4px solid var(--fc-electric-blue); border-radius: 10px;">
+            <h4 style="color: var(--fc-electric-blue); margin-bottom: 0.5rem;">
+                <i class="fas fa-save"></i> Sauvegarde Automatique
+            </h4>
+            <p style="color: rgba(255, 255, 255, 0.8); margin: 0; font-size: 0.9rem;">
+                Toutes vos saisons et données sont automatiquement sauvegardées dans la base de données.
+            </p>
+        </div>
+        
+        <div style="padding: 1rem; background: rgba(0, 255, 136, 0.05); border-left: 4px solid var(--fc-neon-green); border-radius: 10px;">
+            <h4 style="color: var(--fc-neon-green); margin-bottom: 0.5rem;">
+                <i class="fas fa-archive"></i> Archive Complète
+            </h4>
+            <p style="color: rgba(255, 255, 255, 0.8); margin: 0; font-size: 0.9rem;">
+                L'historique complet de chaque saison est conservé : matchs, scores, classements.
+            </p>
+        </div>
+        
+        <div style="padding: 1rem; background: rgba(255, 215, 0, 0.05); border-left: 4px solid var(--fc-gold); border-radius: 10px;">
+            <h4 style="color: var(--fc-gold); margin-bottom: 0.5rem;">
+                <i class="fas fa-trophy"></i> Nouvelle Saison
+            </h4>
+            <p style="color: rgba(255, 255, 255, 0.8); margin: 0; font-size: 0.9rem;">
+                Créez une nouvelle saison sans perdre l'historique des précédentes.
+            </p>
+        </div>
+        
+        <div style="padding: 1rem; background: rgba(138, 43, 226, 0.05); border-left: 4px solid var(--fc-cyber-purple); border-radius: 10px;">
+            <h4 style="color: var(--fc-cyber-purple); margin-bottom: 0.5rem;">
+                <i class="fas fa-chart-line"></i> Statistiques
+            </h4>
+            <p style="color: rgba(255, 255, 255, 0.8); margin: 0; font-size: 0.9rem;">
+                Consultez les performances et records de chaque saison individuellement.
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+function showSeasonDetails(seasonId, seasonName) {
+    const detailsElement = document.getElementById('season-details-' + seasonId);
+    if (detailsElement.style.display === 'none') {
+        detailsElement.style.display = 'block';
+        detailsElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } else {
+        detailsElement.style.display = 'none';
+    }
+}
+</script>
+
+<style>
+@media (max-width: 768px) {
+    .glass-card div[style*="display: grid"] {
+        grid-template-columns: 1fr !important;
+    }
+    
+    div[style*="grid-template-columns: 1fr auto auto"] {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+        text-align: center;
+    }
+    
+    div[style*="display: flex"][style*="flex-direction: column"] {
+        flex-direction: row !important;
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}

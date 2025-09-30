@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}FC 26 League{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+    :root {
+        /* EA Sports FC25/FC26 Inspired Colors */
+        --fc-electric-blue: #00D4FF;
+        --fc-neon-green: #00FF88;
+        --fc-cyber-purple: #8A2BE2;
+        --fc-plasma-pink: #FF1493;
+        --fc-gold: #FFD700;
+        --fc-silver: #C0C0C0;
+        --fc-bronze: #CD7F32;
+        --fc-dark-navy: #0A0E1A;
+        --fc-midnight: #1A1D29;
+        --fc-carbon: #2D3142;
+        --fc-neon-orange: #FF6B35;
+        --fc-volt-yellow: #FFFF00;
+        
+        /* Legacy colors for compatibility */
+        --primary-green: var(--fc-neon-green);
+        --dark-green: #00CC66;
+        --gold: var(--fc-gold);
+        --silver: var(--fc-silver);
+        --bronze: var(--fc-bronze);
+        --night-blue: var(--fc-dark-navy);
+        --deep-blue: var(--fc-midnight);
+    }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: 
+                radial-gradient(circle at 20% 20%, var(--fc-electric-blue) 0%, transparent 30%),
+                radial-gradient(circle at 80% 80%, var(--fc-plasma-pink) 0%, transparent 30%),
+                radial-gradient(circle at 40% 70%, var(--fc-cyber-purple) 0%, transparent 25%),
+                radial-gradient(circle at 70% 30%, var(--fc-neon-orange) 0%, transparent 25%),
+                linear-gradient(135deg, var(--fc-dark-navy) 0%, var(--fc-midnight) 50%, var(--fc-carbon) 100%);
+            min-height: 100vh;
+            color: white;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* FC25/FC26 Style Animated Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 10% 10%, rgba(0, 212, 255, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 90%, rgba(255, 20, 147, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 30% 80%, rgba(138, 43, 226, 0.1) 0%, transparent 35%),
+                radial-gradient(circle at 80% 20%, rgba(255, 107, 53, 0.1) 0%, transparent 35%),
+                conic-gradient(from 0deg at 50% 50%, transparent, rgba(0, 255, 136, 0.05), transparent);
+            animation: fcFloat 25s ease-in-out infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @keyframes fcFloat {
+            0%, 100% { 
+                transform: translateY(0px) rotate(0deg) scale(1); 
+                filter: hue-rotate(0deg);
+            }
+            25% { 
+                transform: translateY(-15px) rotate(90deg) scale(1.02); 
+                filter: hue-rotate(90deg);
+            }
+            50% { 
+                transform: translateY(-30px) rotate(180deg) scale(0.98); 
+                filter: hue-rotate(180deg);
+            }
+            75% { 
+                transform: translateY(-15px) rotate(270deg) scale(1.01); 
+                filter: hue-rotate(270deg);
+            }
+        }
+
+        /* FC25/FC26 Style Header */
+        .header {
+            background: 
+                linear-gradient(135deg, 
+                    rgba(0, 212, 255, 0.1) 0%, 
+                    rgba(138, 43, 226, 0.1) 50%, 
+                    rgba(255, 20, 147, 0.1) 100%),
+                rgba(10, 14, 26, 0.8);
+            backdrop-filter: blur(20px) saturate(180%);
+            padding: 1.5rem 0;
+            border-bottom: 3px solid transparent;
+            border-image: linear-gradient(90deg, var(--fc-electric-blue), var(--fc-neon-green), var(--fc-plasma-pink)) 1;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '⚽';
+            position: absolute;
+            left: 2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2rem;
+            animation: spin 10s linear infinite;
+        }
+
+        .header::after {
+            content: '🏆';
+            position: absolute;
+            right: 2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2rem;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            from { transform: translateY(-50%) rotate(0deg); }
+            to { transform: translateY(-50%) rotate(360deg); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(-50%) scale(1); }
+            50% { transform: translateY(-60%) scale(1.1); }
+        }
+
+        .header h1 {
+            text-align: center;
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            font-weight: 900;
+            background: linear-gradient(
+                45deg, 
+                var(--fc-electric-blue) 0%,
+                var(--fc-neon-green) 25%,
+                var(--fc-plasma-pink) 50%,
+                var(--fc-volt-yellow) 75%,
+                var(--fc-electric-blue) 100%
+            );
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 
+                0 0 20px rgba(0, 212, 255, 0.5),
+                0 0 40px rgba(0, 255, 136, 0.3),
+                0 0 60px rgba(255, 20, 147, 0.2);
+            letter-spacing: 4px;
+            animation: fcTitleGlow 4s ease-in-out infinite, fcTitleMove 8s ease-in-out infinite;
+        }
+
+        @keyframes fcTitleGlow {
+            0%, 100% { 
+                filter: brightness(1) saturate(1); 
+                text-shadow: 
+                    0 0 20px rgba(0, 212, 255, 0.5),
+                    0 0 40px rgba(0, 255, 136, 0.3),
+                    0 0 60px rgba(255, 20, 147, 0.2);
+            }
+            50% { 
+                filter: brightness(1.3) saturate(1.5); 
+                text-shadow: 
+                    0 0 30px rgba(0, 212, 255, 0.8),
+                    0 0 60px rgba(0, 255, 136, 0.6),
+                    0 0 90px rgba(255, 20, 147, 0.4);
+            }
+        }
+
+        @keyframes fcTitleMove {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+        }
+
+        /* Navigation moderne */
+        .nav-menu {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(45deg, rgba(0, 255, 65, 0.2), rgba(0, 179, 45, 0.2));
+            border: 2px solid var(--primary-green);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .nav-btn:hover::before {
+            left: 100%;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(0, 255, 65, 0.3);
+            border-color: var(--gold);
+            background: linear-gradient(45deg, rgba(255, 215, 0, 0.2), rgba(255, 165, 0, 0.2));
+        }
+
+        /* Cards modernes avec effet glassmorphism */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, rgba(0, 255, 65, 0.1), transparent);
+            animation: rotate 10s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .glass-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            border-color: var(--primary-green);
+        }
+
+        /* Tables stylées */
+        .modern-table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 15px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .modern-table th {
+            background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+            color: white;
+            padding: 1.5rem 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+        }
+
+        .modern-table td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .modern-table tbody tr:hover {
+            background: rgba(0, 255, 65, 0.1);
+            transform: scale(1.02);
+        }
+
+        /* Formulaires modernes */
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--primary-green);
+            font-size: 1.1rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid rgba(0, 255, 65, 0.3);
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-green);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Boutons dynamiques */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary-green), var(--dark-green));
+            color: white;
+            box-shadow: 0 5px 15px rgba(0, 255, 65, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 255, 65, 0.4);
+        }
+
+        .btn-gold {
+            background: linear-gradient(45deg, var(--gold), #FFA500);
+            color: #000;
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .btn-gold:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(255, 215, 0, 0.4);
+        }
+
+        /* Animations d'entrée */
+        .fade-in {
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Messages flash stylés */
+        .flash-message {
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            text-align: center;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .flash-success {
+            background: linear-gradient(45deg, rgba(0, 255, 65, 0.2), rgba(0, 179, 45, 0.2));
+            border: 2px solid var(--primary-green);
+            color: var(--primary-green);
+        }
+
+        .flash-error {
+            background: linear-gradient(45deg, rgba(255, 0, 0, 0.2), rgba(179, 0, 0, 0.2));
+            border: 2px solid #ff0000;
+            color: #ff6666;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .nav-menu {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .nav-btn {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+        }
+
+        /* Effets de particules pour les positions de podium */
+        .position-1 { 
+            background: linear-gradient(45deg, rgba(255, 215, 0, 0.2), rgba(255, 165, 0, 0.1)) !important;
+            border-left: 4px solid var(--gold);
+            animation: goldGlow 2s ease-in-out infinite;
+        }
+
+        .position-2 { 
+            background: linear-gradient(45deg, rgba(192, 192, 192, 0.2), rgba(169, 169, 169, 0.1)) !important;
+            border-left: 4px solid var(--silver);
+        }
+
+        .position-3 { 
+            background: linear-gradient(45deg, rgba(205, 127, 50, 0.2), rgba(184, 115, 51, 0.1)) !important;
+            border-left: 4px solid var(--bronze);
+        }
+
+        @keyframes goldGlow {
+            0%, 100% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.6); }
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>{% block header_title %}⚽ FC 26 League ⚽{% endblock %}</h1>
+        </div>
+    </div>
+
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ 'success' if category == 'message' else category }}">
+                        <i class="fas fa-{{ 'check-circle' if category == 'success' or category == 'message' else 'exclamation-triangle' }}"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <nav class="nav-menu">
+            <a href="{{ url_for('home') }}" class="nav-btn">
+                <i class="fas fa-home"></i>
+                Accueil
+            </a>
+            <a href="{{ url_for('manage_players') }}" class="nav-btn">
+                <i class="fas fa-users"></i>
+                Gérer Joueurs
+            </a>
+            <a href="{{ url_for('standings') }}" class="nav-btn">
+                <i class="fas fa-trophy"></i>
+                Classements
+            </a>
+            <a href="{{ url_for('season_history') }}" class="nav-btn">
+                <i class="fas fa-history"></i>
+                Historique
+            </a>
+            {% if current_season and current_season.is_active %}
+            <a href="{{ url_for('generate_week') }}" class="nav-btn">
+                <i class="fas fa-calendar-plus"></i>
+                Générer Semaine
+            </a>
+            <a href="{{ url_for('next_week') }}" class="nav-btn">
+                <i class="fas fa-forward"></i>
+                Semaine Suivante
+            </a>
+            {% endif %}
+        </nav>
+
+        <main class="fade-in">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <script>
+        // Animation des cartes au scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animation = 'fadeIn 0.8s ease-out forwards';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.glass-card').forEach(card => {
+            observer.observe(card);
+        });
+
+        // Effet de survol sur les lignes de tableau
+        document.querySelectorAll('.modern-table tbody tr').forEach(row => {
+            row.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateX(10px) scale(1.02)';
+            });
+            
+            row.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateX(0) scale(1)';
+            });
+        });
+
+        // Animation des boutons
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                let ripple = document.createElement('span');
+                let rect = this.getBoundingClientRect();
+                let size = Math.max(rect.width, rect.height);
+                let x = e.clientX - rect.left - size / 2;
+                let y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                ripple.classList.add('ripple');
+                
+                this.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+        });
+
+        // CSS pour l'effet ripple
+        const style = document.createElement('style');
+        style.textContent = `
+            .ripple {
+                position: absolute;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.3);
+                transform: scale(0);
+                animation: ripple-animation 0.6s linear;
+                pointer-events: none;
+            }
+            
+            @keyframes ripple-animation {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

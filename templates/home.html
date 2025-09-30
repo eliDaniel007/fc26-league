@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+
+{% block title %}FC 26 League - Accueil{% endblock %}
+
+{% block header_title %}⚽ FC 26 League ⚽{% endblock %}
+
+{% block content %}
+<div class="glass-card">
+    <h2 style="color: var(--fc-electric-blue); font-size: 2rem; margin-bottom: 1rem; text-align: center;">
+        <i class="fas fa-futbol"></i>
+        {% if season %}
+        {{ season.name }} - Semaine {{ season.current_week }}
+            {% else %}
+        Aucune saison active
+            {% endif %}
+    </h2>
+    
+    {% if season %}
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <div style="display: inline-flex; gap: 2rem; align-items: center; flex-wrap: wrap; justify-content: center;">
+            <div style="background: linear-gradient(45deg, var(--fc-electric-blue), var(--fc-cyber-purple)); padding: 1rem 2rem; border-radius: 15px;">
+                <strong style="color: white;">Semaine Actuelle: {{ season.current_week }}</strong>
+            </div>
+            <div style="background: linear-gradient(45deg, var(--fc-neon-green), var(--fc-neon-orange)); padding: 1rem 2rem; border-radius: 15px;">
+                <strong style="color: black;">5 Joueurs FC 26</strong>
+            </div>
+            <div style="background: linear-gradient(45deg, var(--fc-plasma-pink), var(--fc-volt-yellow)); padding: 1rem 2rem; border-radius: 15px;">
+                <strong style="color: black;">4 Matchs par joueur/semaine</strong>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Joueurs Actifs -->
+<div class="glass-card">
+    <h3 style="color: var(--fc-neon-green); font-size: 1.8rem; margin-bottom: 1.5rem; text-align: center;">
+        <i class="fas fa-users"></i> Joueurs de la Ligue
+    </h3>
+    
+    {% if players %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+        {% for player in players %}
+        <div style="background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(138, 43, 226, 0.1)); 
+                    border: 2px solid var(--fc-electric-blue); border-radius: 15px; padding: 1rem; text-align: center;
+                    transition: all 0.3s ease;" 
+             onmouseover="this.style.transform='scale(1.05)'; this.style.borderColor='var(--fc-neon-green)'"
+             onmouseout="this.style.transform='scale(1)'; this.style.borderColor='var(--fc-electric-blue)'">
+            <i class="fas fa-user-circle" style="font-size: 2rem; color: var(--fc-neon-green); margin-bottom: 0.5rem;"></i>
+            <h4 style="color: white; margin: 0;">{{ player.name }}</h4>
+    </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p style="text-align: center; color: var(--fc-plasma-pink); font-size: 1.2rem;">
+        <i class="fas fa-exclamation-triangle"></i>
+        Aucun joueur actif. <a href="{{ url_for('manage_players') }}" style="color: var(--fc-neon-green);">Gérez les joueurs</a>
+    </p>
+    {% endif %}
+</div>
+
+<!-- Matchs de la semaine actuelle -->
+{% if current_week_matches %}
+<div class="glass-card">
+    <h3 style="color: var(--fc-volt-yellow); font-size: 1.8rem; margin-bottom: 1.5rem; text-align: center;">
+        <i class="fas fa-futbol"></i> Matchs de la Semaine {{ season.current_week }}
+    </h3>
+    
+    <div style="overflow-x: auto;">
+        <table class="modern-table">
+            <thead>
+                <tr>
+                    <th><i class="fas fa-hashtag"></i> Match</th>
+                    <th><i class="fas fa-user"></i> Joueur 1</th>
+                    <th><i class="fas fa-user"></i> Joueur 2</th>
+                    <th><i class="fas fa-futbol"></i> Score</th>
+                    <th><i class="fas fa-trophy"></i> Gagnant</th>
+                    <th><i class="fas fa-cogs"></i> Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for match in current_week_matches %}
+                <tr style="{% if match.is_completed %}background: rgba(0, 255, 136, 0.1);{% endif %}">
+                    <td><strong>#{{ match.match_number }}</strong></td>
+                    <td>{{ match.player1.name }}</td>
+                    <td>{{ match.player2.name }}</td>
+                    <td>
+                        {% if match.is_completed %}
+                            <span style="color: var(--fc-neon-green); font-weight: bold;">
+                                {{ match.player1_score }} - {{ match.player2_score }}
+                            </span>
+                        {% else %}
+                            <span style="color: var(--fc-plasma-pink);">À jouer</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if match.is_completed %}
+                            {% set winner = match.get_winner() %}
+                            {% if winner %}
+                                <span style="color: var(--fc-gold); font-weight: bold;">
+                                    <i class="fas fa-crown"></i> {{ winner.name }}
+                                </span>
+                            {% else %}
+                                <span style="color: var(--fc-silver);">Match nul</span>
+                            {% endif %}
+                        {% else %}
+                            <span style="color: rgba(255, 255, 255, 0.5);">-</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if not match.is_completed %}
+                        <form method="POST" action="{{ url_for('update_match', match_id=match.id) }}" 
+                              style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                            <input type="number" name="score1" min="0" max="20" placeholder="0" 
+                                   style="width: 50px; padding: 0.25rem; border-radius: 5px; 
+                                          border: 1px solid var(--fc-electric-blue); 
+                                          background: rgba(255, 255, 255, 0.1); color: white;">
+                            <span style="color: white;">-</span>
+                            <input type="number" name="score2" min="0" max="20" placeholder="0" 
+                                   style="width: 50px; padding: 0.25rem; border-radius: 5px; 
+                                          border: 1px solid var(--fc-electric-blue); 
+                                          background: rgba(255, 255, 255, 0.1); color: white;">
+                            <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                                <i class="fas fa-save"></i>
+                            </button>
+                        </form>
+                                {% else %}
+                        <span style="color: var(--fc-neon-green);">
+                            <i class="fas fa-check-circle"></i> Terminé
+                                    </span>
+                                {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+                            </div>
+                            
+    <!-- Statistiques de la semaine -->
+    {% set completed = current_week_matches | selectattr('is_completed') | list %}
+    {% set total = current_week_matches | list %}
+    <div style="margin-top: 1.5rem; text-align: center; padding: 1rem; 
+                background: linear-gradient(45deg, rgba(0, 255, 136, 0.1), rgba(0, 212, 255, 0.1)); 
+                border-radius: 15px;">
+        <h4 style="color: var(--fc-neon-green); margin-bottom: 0.5rem;">Progression de la semaine</h4>
+        <div style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;">
+            <div>
+                <span style="color: white; font-size: 1.1rem;">Matchs terminés: </span>
+                <strong style="color: var(--fc-volt-yellow);">{{ completed | length }} / {{ total | length }}</strong>
+            </div>
+            <div>
+                <span style="color: white; font-size: 1.1rem;">Progression: </span>
+                <strong style="color: var(--fc-plasma-pink);">{{ ((completed | length / total | length) * 100) | round(1) }}%</strong>
+                        </div>
+                </div>
+                
+        <div style="width: 100%; background: rgba(0, 0, 0, 0.3); border-radius: 10px; margin-top: 1rem; height: 20px; position: relative; overflow: hidden;">
+            <div style="width: {{ ((completed | length / total | length) * 100) }}%; 
+                        background: linear-gradient(90deg, var(--fc-neon-green), var(--fc-electric-blue)); 
+                        height: 100%; border-radius: 10px; transition: width 0.5s ease;"></div>
+        </div>
+    </div>
+</div>
+                    {% endif %}
+
+<!-- Classements (Aperçu) -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem;">
+    <!-- Classement Hebdomadaire -->
+    <div class="glass-card">
+        <h3 style="color: var(--fc-neon-orange); font-size: 1.5rem; margin-bottom: 1rem; text-align: center;">
+            <i class="fas fa-calendar-week"></i> Top 3 - Semaine {{ season.current_week if season else 1 }}
+        </h3>
+        
+        {% if weekly_standings %}
+        <div style="space-y: 0.5rem;">
+            {% for standing in weekly_standings[:3] %}
+            <div class="position-{{ loop.index }}" style="display: flex; justify-content: space-between; align-items: center; 
+                                                           padding: 0.75rem; margin-bottom: 0.5rem; border-radius: 10px;
+                                                           background: rgba(255, 255, 255, 0.05);">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-size: 1.2rem; font-weight: bold;">
+                        {% if loop.index == 1 %}🥇
+                        {% elif loop.index == 2 %}🥈
+                        {% else %}🥉{% endif %}
+                    </span>
+                    <span style="color: white; font-weight: 600;">{{ standing.player.name }}</span>
+                </div>
+                <div style="text-align: right;">
+                    <div style="color: var(--fc-neon-green); font-weight: bold;">{{ standing.points }} pts</div>
+                    <div style="color: var(--fc-electric-blue); font-size: 0.9rem;">{{ standing.goal_average }} moy.</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="text-align: center; color: rgba(255, 255, 255, 0.6);">Aucune donnée disponible</p>
+                            {% endif %}
+                        </div>
+                        
+    <!-- Classement Cumulé -->
+    <div class="glass-card">
+        <h3 style="color: var(--fc-plasma-pink); font-size: 1.5rem; margin-bottom: 1rem; text-align: center;">
+            <i class="fas fa-chart-line"></i> Top 3 - Classement Général
+        </h3>
+        
+        {% if cumulative_standings %}
+        <div style="space-y: 0.5rem;">
+            {% for standing in cumulative_standings[:3] %}
+            <div class="position-{{ loop.index }}" style="display: flex; justify-content: space-between; align-items: center; 
+                                                           padding: 0.75rem; margin-bottom: 0.5rem; border-radius: 10px;
+                                                           background: rgba(255, 255, 255, 0.05);">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-size: 1.2rem; font-weight: bold;">
+                        {% if loop.index == 1 %}👑
+                        {% elif loop.index == 2 %}🥈
+                        {% else %}🥉{% endif %}
+                    </span>
+                    <span style="color: white; font-weight: 600;">{{ standing.player.name }}</span>
+                </div>
+                <div style="text-align: right;">
+                    <div style="color: var(--fc-neon-green); font-weight: bold;">{{ standing.points }} pts</div>
+                    <div style="color: var(--fc-electric-blue); font-size: 0.9rem;">{{ standing.matches_played }} matchs</div>
+                </div>
+                </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="text-align: center; color: rgba(255, 255, 255, 0.6);">Aucune donnée disponible</p>
+        {% endif %}
+                </div>
+            </div>
+
+<!-- Actions Rapides -->
+<div class="glass-card" style="margin-top: 2rem;">
+    <h3 style="color: var(--fc-cyber-purple); font-size: 1.5rem; margin-bottom: 1rem; text-align: center;">
+        <i class="fas fa-bolt"></i> Actions Rapides
+    </h3>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+        {% if season and players|length == 5 %}
+            {% if not current_week_matches %}
+            <a href="{{ url_for('generate_week') }}" class="btn btn-primary" style="padding: 1.5rem; text-align: center; text-decoration: none;">
+                <i class="fas fa-calendar-plus"></i>
+                <div>Générer Semaine {{ season.current_week }}</div>
+                <small style="opacity: 0.8;">Créer 10 matchs (4 par joueur)</small>
+            </a>
+            {% endif %}
+            
+            {% if current_week_matches and (current_week_matches | selectattr('is_completed') | list | length) == (current_week_matches | list | length) %}
+            <a href="{{ url_for('next_week') }}" class="btn btn-gold" style="padding: 1.5rem; text-align: center; text-decoration: none;">
+                <i class="fas fa-forward"></i>
+                <div>Passer à la Semaine {{ season.current_week + 1 }}</div>
+                <small style="opacity: 0.8;">Tous les matchs sont terminés</small>
+            </a>
+                            {% endif %}
+        {% endif %}
+        
+        <a href="{{ url_for('standings') }}" class="btn btn-primary" style="padding: 1.5rem; text-align: center; text-decoration: none;">
+            <i class="fas fa-trophy"></i>
+            <div>Voir tous les Classements</div>
+            <small style="opacity: 0.8;">Hebdo & Cumulé détaillés</small>
+        </a>
+        
+        <a href="{{ url_for('manage_players') }}" class="btn btn-primary" style="padding: 1.5rem; text-align: center; text-decoration: none;">
+            <i class="fas fa-users-cog"></i>
+            <div>Gérer les Joueurs</div>
+            <small style="opacity: 0.8;">Activer/Désactiver joueurs</small>
+        </a>
+    </div>
+</div>
+
+{% if not season or not season.is_active %}
+<div class="glass-card" style="text-align: center; border: 2px solid var(--fc-plasma-pink);">
+    <h3 style="color: var(--fc-plasma-pink); margin-bottom: 1rem;">
+        <i class="fas fa-exclamation-triangle"></i> Aucune saison active
+    </h3>
+    <p style="margin-bottom: 1.5rem; color: rgba(255, 255, 255, 0.8);">
+        Rafraîchissez la page ou ajoutez des joueurs pour commencer une nouvelle saison.
+    </p>
+    <a href="{{ url_for('home') }}" class="btn btn-primary">
+        <i class="fas fa-refresh"></i> Rafraîchir
+    </a>
+</div>
+{% endif %}
+
+<style>
+@media (max-width: 768px) {
+    .glass-card div[style*="display: grid"] {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .modern-table {
+        font-size: 0.9rem;
+    }
+    
+    .modern-table td form {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .modern-table td input {
+        width: 60px !important;
+    }
+}
+</style>
+{% endblock %} 

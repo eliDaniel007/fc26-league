@@ -1,0 +1,405 @@
+{% extends "base.html" %}
+
+{% block title %}Classement - FIFA 25 Tournament{% endblock %}
+
+{% block header_title %}Classement du Tournoi{% endblock %}
+
+{% block extra_css %}
+<style>
+    .standings-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        padding: 2rem;
+        background: linear-gradient(135deg, rgba(0, 255, 65, 0.1), rgba(0, 179, 45, 0.05));
+        border: 2px solid var(--primary-green);
+        border-radius: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .standings-header::before {
+        content: '🏆';
+        position: absolute;
+        top: -20px;
+        right: -20px;
+        font-size: 5rem;
+        opacity: 0.1;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    .standings-title {
+        font-size: 2.5rem;
+        font-weight: 900;
+        color: var(--primary-green);
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+
+    .standings-subtitle {
+        font-size: 1.2rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .podium {
+        display: flex;
+        justify-content: center;
+        align-items: end;
+        gap: 1rem;
+        margin: 3rem 0;
+        height: 250px;
+    }
+
+    .podium-place {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+        border-radius: 15px 15px 0 0;
+        padding: 1.5rem;
+        text-align: center;
+        position: relative;
+        min-width: 150px;
+        transition: all 0.3s ease;
+    }
+
+    .podium-place:hover {
+        transform: translateY(-10px);
+    }
+
+    .podium-place.first {
+        height: 200px;
+        background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 165, 0, 0.2));
+        border: 3px solid var(--gold);
+        animation: goldGlow 2s ease-in-out infinite;
+    }
+
+    .podium-place.second {
+        height: 150px;
+        background: linear-gradient(135deg, rgba(192, 192, 192, 0.3), rgba(169, 169, 169, 0.2));
+        border: 3px solid var(--silver);
+    }
+
+    .podium-place.third {
+        height: 100px;
+        background: linear-gradient(135deg, rgba(205, 127, 50, 0.3), rgba(184, 115, 51, 0.2));
+        border: 3px solid var(--bronze);
+    }
+
+    @keyframes goldGlow {
+        0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
+        50% { box-shadow: 0 0 40px rgba(255, 215, 0, 0.6); }
+    }
+
+    .podium-medal {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        display: block;
+        animation: bounce 2s ease-in-out infinite;
+    }
+
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .podium-name {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: white;
+    }
+
+    .podium-stats {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        line-height: 1.3;
+    }
+
+    .standings-table {
+        margin-top: 3rem;
+    }
+
+    .player-row.position-1 {
+        background: linear-gradient(45deg, rgba(255, 215, 0, 0.2), rgba(255, 165, 0, 0.1)) !important;
+        border-left: 4px solid var(--gold);
+        animation: goldShimmer 3s ease-in-out infinite;
+    }
+
+    .player-row.position-2 {
+        background: linear-gradient(45deg, rgba(192, 192, 192, 0.2), rgba(169, 169, 169, 0.1)) !important;
+        border-left: 4px solid var(--silver);
+    }
+
+    .player-row.position-3 {
+        background: linear-gradient(45deg, rgba(205, 127, 50, 0.2), rgba(184, 115, 51, 0.1)) !important;
+        border-left: 4px solid var(--bronze);
+    }
+
+    .player-row.eliminated {
+        opacity: 0.6;
+        background: linear-gradient(45deg, rgba(255, 68, 68, 0.1), rgba(204, 0, 0, 0.05)) !important;
+        border-left: 4px solid #ff4444;
+    }
+
+    @keyframes goldShimmer {
+        0%, 100% { transform: translateX(0); }
+        50% { transform: translateX(5px); }
+    }
+
+    .status-badge {
+        padding: 0.3rem 0.8rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .status-active {
+        background: linear-gradient(45deg, rgba(0, 255, 65, 0.2), rgba(0, 179, 45, 0.1));
+        border: 1px solid var(--primary-green);
+        color: var(--primary-green);
+    }
+
+    .status-eliminated {
+        background: linear-gradient(45deg, rgba(255, 68, 68, 0.2), rgba(204, 0, 0, 0.1));
+        border: 1px solid #ff4444;
+        color: #ff6666;
+    }
+
+    .status-champion {
+        background: linear-gradient(45deg, rgba(255, 215, 0, 0.3), rgba(255, 165, 0, 0.2));
+        border: 1px solid var(--gold);
+        color: var(--gold);
+        animation: championPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes championPulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    .tournament-progress {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .progress-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .progress-item {
+        background: rgba(0, 255, 65, 0.1);
+        border: 1px solid var(--primary-green);
+        border-radius: 10px;
+        padding: 1rem;
+    }
+
+    .progress-number {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-green);
+        display: block;
+    }
+
+    .progress-label {
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .podium {
+            flex-direction: column;
+            height: auto;
+            gap: 1rem;
+        }
+        
+        .podium-place {
+            width: 100%;
+            height: auto !important;
+            min-height: 100px;
+        }
+        
+        .standings-title {
+            font-size: 2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="standings-header">
+    <div class="standings-title">
+        {% if tournament.status == 'finished' %}
+            🏆 Classement Final
+        {% else %}
+            📊 Classement Actuel
+        {% endif %}
+    </div>
+    <div class="standings-subtitle">
+        {{ tournament.name }}
+        {% if tournament.status == 'in_progress' %}
+            - Journée {{ tournament.current_round }}
+        {% endif %}
+    </div>
+</div>
+
+<!-- Informations sur le tournoi -->
+<div class="glass-card tournament-progress">
+    <h3><i class="fas fa-info-circle"></i> Progression du Tournoi</h3>
+    <div class="progress-info">
+        <div class="progress-item">
+            <span class="progress-number">{{ standings|length }}</span>
+            <span class="progress-label">Participants Total</span>
+        </div>
+        <div class="progress-item">
+            <span class="progress-number">{{ standings|rejectattr('is_eliminated')|list|length }}</span>
+            <span class="progress-label">Encore en Lice</span>
+        </div>
+        <div class="progress-item">
+            <span class="progress-number">{{ standings|selectattr('is_eliminated')|list|length }}</span>
+            <span class="progress-label">Éliminés</span>
+        </div>
+        <div class="progress-item">
+            <span class="progress-number">{{ tournament.current_round if tournament.status == 'in_progress' else tournament.current_round }}</span>
+            <span class="progress-label">Journées Jouées</span>
+        </div>
+    </div>
+</div>
+
+<!-- Podium pour les 3 premiers -->
+{% if standings|length >= 3 %}
+<div class="glass-card">
+    <h2><i class="fas fa-medal"></i> Podium</h2>
+    <div class="podium">
+        {% for stats in standings[:3] %}
+        <div class="podium-place {{ 'first' if loop.index == 1 else 'second' if loop.index == 2 else 'third' }}">
+            <span class="podium-medal">{{ '🥇' if loop.index == 1 else '🥈' if loop.index == 2 else '🥉' }}</span>
+            <div class="podium-name">{{ stats.user.username }}</div>
+            <div class="podium-stats">
+                <div><strong>{{ stats.points }}</strong> points</div>
+                <div>{{ stats.wins }}V {{ stats.draws }}N {{ stats.losses }}D</div>
+                <div>{{ stats.goals_for }}-{{ stats.goals_against }} ({{ '+' if stats.goal_difference > 0 else '' }}{{ stats.goal_difference }})</div>
+                {% if stats.is_eliminated %}
+                    <div style="color: #ff6666; font-size: 0.8rem; margin-top: 0.5rem;">
+                        Éliminé J{{ stats.elimination_round }}
+                    </div>
+                {% elif tournament.status == 'finished' and loop.index == 1 %}
+                    <div style="color: var(--gold); font-size: 0.8rem; margin-top: 0.5rem;">
+                        🏆 CHAMPION
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Classement complet -->
+<div class="glass-card standings-table">
+    <h2><i class="fas fa-list-ol"></i> Classement Détaillé</h2>
+    
+    <table class="modern-table">
+        <thead>
+            <tr>
+                <th><i class="fas fa-medal"></i> Pos</th>
+                <th><i class="fas fa-user"></i> Joueur</th>
+                <th><i class="fas fa-gamepad"></i> J</th>
+                <th><i class="fas fa-trophy"></i> V</th>
+                <th><i class="fas fa-handshake"></i> N</th>
+                <th><i class="fas fa-times"></i> D</th>
+                <th><i class="fas fa-futbol"></i> BP</th>
+                <th><i class="fas fa-shield-alt"></i> BC</th>
+                <th><i class="fas fa-plus-minus"></i> Diff</th>
+                <th><i class="fas fa-star"></i> Pts</th>
+                <th><i class="fas fa-info"></i> Statut</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for stats in standings %}
+            <tr class="player-row position-{{ loop.index if loop.index <= 3 else 'other' }} {{ 'eliminated' if stats.is_eliminated else '' }}">
+                <td>
+                    <strong>{{ loop.index }}</strong>
+                    {% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% elif loop.index == 3 %}🥉{% endif %}
+                </td>
+                <td><strong>{{ stats.user.username }}</strong></td>
+                <td>{{ stats.matches_played }}</td>
+                <td><span style="color: var(--primary-green);">{{ stats.wins }}</span></td>
+                <td><span style="color: var(--gold);">{{ stats.draws }}</span></td>
+                <td><span style="color: #ff6666;">{{ stats.losses }}</span></td>
+                <td>{{ stats.goals_for }}</td>
+                <td>{{ stats.goals_against }}</td>
+                <td class="{{ 'text-green' if stats.goal_difference > 0 else 'text-red' if stats.goal_difference < 0 else '' }}">
+                    {{ '+' if stats.goal_difference > 0 else '' }}{{ stats.goal_difference }}
+                </td>
+                <td><strong style="color: var(--primary-green); font-size: 1.2rem;">{{ stats.points }}</strong></td>
+                <td>
+                    {% if tournament.status == 'finished' and loop.index == 1 %}
+                        <span class="status-badge status-champion">🏆 Champion</span>
+                    {% elif stats.is_eliminated %}
+                        <span class="status-badge status-eliminated">❌ Éliminé J{{ stats.elimination_round }}</span>
+                    {% else %}
+                        <span class="status-badge status-active">✅ En Lice</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Navigation -->
+<div style="text-align: center; margin-top: 2rem;">
+    {% if tournament.status == 'in_progress' %}
+        <a href="{{ url_for('tournament_round', round_number=tournament.current_round) }}" class="btn btn-primary">
+            <i class="fas fa-futbol"></i>
+            Retour à la Journée {{ tournament.current_round }}
+        </a>
+    {% endif %}
+    <a href="{{ url_for('home') }}" class="btn btn-gold">
+        <i class="fas fa-home"></i>
+        Retour à l'Accueil
+    </a>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Animation des cartes au chargement
+    document.addEventListener('DOMContentLoaded', function() {
+        const rows = document.querySelectorAll('.player-row');
+        
+        rows.forEach((row, index) => {
+            row.style.opacity = '0';
+            row.style.transform = 'translateX(-20px)';
+            
+            setTimeout(() => {
+                row.style.transition = 'all 0.5s ease';
+                row.style.opacity = '1';
+                row.style.transform = 'translateX(0)';
+            }, index * 100);
+        });
+        
+        // Animation des éléments du podium
+        const podiumPlaces = document.querySelectorAll('.podium-place');
+        podiumPlaces.forEach((place, index) => {
+            place.style.opacity = '0';
+            place.style.transform = 'translateY(50px)';
+            
+            setTimeout(() => {
+                place.style.transition = 'all 0.8s ease';
+                place.style.opacity = '1';
+                place.style.transform = 'translateY(0)';
+            }, (index + 1) * 300);
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,447 @@
+{% extends "base.html" %}
+
+{% block title %}Ajouter un Match - FIFA 25 Tournament{% endblock %}
+
+{% block header_title %}Nouveau Match{% endblock %}
+
+{% block extra_css %}
+<style>
+    .match-form {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .match-form::before {
+        content: '🏆';
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        font-size: 3rem;
+        opacity: 0.1;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    .vs-section {
+        text-align: center;
+        margin: 2rem 0;
+        position: relative;
+    }
+
+    .vs-text {
+        font-size: 3rem;
+        font-weight: 900;
+        background: linear-gradient(45deg, var(--primary-green), var(--gold));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    .player-section {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        gap: 2rem;
+        align-items: center;
+        margin: 2rem 0;
+    }
+
+    .player-card {
+        background: linear-gradient(135deg, rgba(0, 255, 65, 0.1), rgba(0, 179, 45, 0.05));
+        border: 2px solid var(--primary-green);
+        border-radius: 20px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .player-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: conic-gradient(from 0deg, transparent, rgba(0, 255, 65, 0.05), transparent);
+        animation: rotate 20s linear infinite;
+        z-index: -1;
+    }
+
+    .player-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0, 255, 65, 0.2);
+        border-color: var(--gold);
+    }
+
+    .player-card.selected {
+        border-color: var(--gold);
+        background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 165, 0, 0.05));
+    }
+
+    .player-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, var(--primary-green), var(--dark-green));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 2rem;
+        color: white;
+        transition: all 0.3s ease;
+    }
+
+    .player-card:hover .player-avatar {
+        transform: scale(1.1) rotate(10deg);
+    }
+
+    .score-section {
+        background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 165, 0, 0.05));
+        border: 2px solid var(--gold);
+        border-radius: 20px;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .score-inputs {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 2rem;
+        margin: 1rem 0;
+    }
+
+    .score-input {
+        width: 80px;
+        height: 80px;
+        border: 3px solid var(--primary-green);
+        border-radius: 50%;
+        text-align: center;
+        font-size: 2rem;
+        font-weight: 700;
+        background: rgba(255, 255, 255, 0.9);
+        color: #333;
+        transition: all 0.3s ease;
+    }
+
+    .score-input:focus {
+        transform: scale(1.1);
+        border-color: var(--gold);
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+    }
+
+    .vs-separator {
+        font-size: 2rem;
+        font-weight: 900;
+        color: var(--gold);
+        text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    }
+
+    .match-preview {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .preview-text {
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .preview-score {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-green);
+    }
+
+    .form-select {
+        appearance: none;
+        background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAiIGhlaWdodD0iNiIgdmlld0JveD0iMCAwIDEwIDYiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNSA1TDkgMSIgc3Ryb2tlPSIjNjY2IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K');
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        padding-right: 3rem;
+    }
+
+    .quick-scores {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+        margin-top: 1rem;
+    }
+
+    .quick-score-btn {
+        background: rgba(0, 255, 65, 0.2);
+        border: 1px solid var(--primary-green);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+    .quick-score-btn:hover {
+        background: var(--primary-green);
+        transform: translateY(-2px);
+    }
+
+    .match-tips {
+        background: linear-gradient(135deg, rgba(0, 179, 45, 0.1), rgba(0, 255, 65, 0.05));
+        border-left: 4px solid var(--primary-green);
+        border-radius: 10px;
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+
+    .tip-title {
+        font-weight: 600;
+        color: var(--primary-green);
+        margin-bottom: 0.5rem;
+    }
+
+    .tip-text {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+{% if users|length < 2 %}
+<div class="glass-card" style="text-align: center; padding: 3rem;">
+    <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--gold); margin-bottom: 1rem;"></i>
+    <h3>Pas assez de joueurs</h3>
+    <p>Il faut au moins 2 joueurs inscrits pour créer un match.</p>
+    <a href="{{ url_for('add_participant') }}" class="btn btn-primary" style="margin-top: 1rem;">
+        <i class="fas fa-user-plus"></i>
+        Ajouter des joueurs
+    </a>
+</div>
+{% else %}
+
+<div class="match-tips">
+    <div class="tip-title"><i class="fas fa-lightbulb"></i> Conseil</div>
+    <div class="tip-text">Sélectionnez les deux joueurs qui vont s'affronter, puis saisissez le score final du match.</div>
+</div>
+
+<div class="glass-card match-form">
+    <form method="POST" id="matchForm">
+        <!-- Sélection des joueurs -->
+        <div class="player-section">
+            <div class="player-card" id="player1Card">
+                <div class="player-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-gamepad"></i>
+                        Joueur 1
+                    </label>
+                    <select name="player1" class="form-input form-select" required onchange="updatePlayerCard(1, this)">
+                        <option value="">Choisir le joueur 1</option>
+                        {% for user in users %}
+                            <option value="{{ user.id }}">{{ user.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="vs-section">
+                <div class="vs-text">VS</div>
+            </div>
+
+            <div class="player-card" id="player2Card">
+                <div class="player-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-gamepad"></i>
+                        Joueur 2
+                    </label>
+                    <select name="player2" class="form-input form-select" required onchange="updatePlayerCard(2, this)">
+                        <option value="">Choisir le joueur 2</option>
+                        {% for user in users %}
+                            <option value="{{ user.id }}">{{ user.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section des scores -->
+        <div class="score-section">
+            <h3><i class="fas fa-trophy"></i> Score du Match</h3>
+            <div class="score-inputs">
+                <input type="number" name="score1" class="score-input" min="0" max="20" required 
+                       placeholder="0" oninput="updatePreview()">
+                <div class="vs-separator">-</div>
+                <input type="number" name="score2" class="score-input" min="0" max="20" required 
+                       placeholder="0" oninput="updatePreview()">
+            </div>
+            
+            <!-- Scores rapides -->
+            <div class="quick-scores">
+                <button type="button" class="quick-score-btn" onclick="setScore(1, 0)">1-0</button>
+                <button type="button" class="quick-score-btn" onclick="setScore(2, 1)">2-1</button>
+                <button type="button" class="quick-score-btn" onclick="setScore(3, 2)">3-2</button>
+                <button type="button" class="quick-score-btn" onclick="setScore(1, 1)">1-1</button>
+                <button type="button" class="quick-score-btn" onclick="setScore(0, 0)">0-0</button>
+            </div>
+        </div>
+
+        <!-- Aperçu du match -->
+        <div class="match-preview" id="matchPreview" style="display: none;">
+            <div class="preview-text">Aperçu du match :</div>
+            <div id="previewContent">Sélectionnez les joueurs et saisissez les scores</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 2rem; font-size: 1.2rem;">
+            <i class="fas fa-save"></i>
+            Enregistrer le Match
+        </button>
+    </form>
+</div>
+
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let selectedPlayers = { 1: null, 2: null };
+
+    function updatePlayerCard(playerNum, selectElement) {
+        const card = document.getElementById(`player${playerNum}Card`);
+        const selectedText = selectElement.options[selectElement.selectedIndex].text;
+        
+        if (selectElement.value) {
+            card.classList.add('selected');
+            selectedPlayers[playerNum] = selectedText;
+            
+            // Changer l'avatar en fonction du joueur sélectionné
+            const avatar = card.querySelector('.player-avatar');
+            avatar.innerHTML = selectedText.charAt(0).toUpperCase();
+        } else {
+            card.classList.remove('selected');
+            selectedPlayers[playerNum] = null;
+            const avatar = card.querySelector('.player-avatar');
+            avatar.innerHTML = '<i class="fas fa-user"></i>';
+        }
+        
+        updatePreview();
+        validatePlayerSelection();
+    }
+
+    function validatePlayerSelection() {
+        const player1Select = document.querySelector('select[name="player1"]');
+        const player2Select = document.querySelector('select[name="player2"]');
+        
+        // Empêcher de sélectionner le même joueur
+        if (player1Select.value && player2Select.value && player1Select.value === player2Select.value) {
+            alert('Un joueur ne peut pas jouer contre lui-même !');
+            player2Select.value = '';
+            updatePlayerCard(2, player2Select);
+        }
+    }
+
+    function setScore(score1, score2) {
+        document.querySelector('input[name="score1"]').value = score1;
+        document.querySelector('input[name="score2"]').value = score2;
+        updatePreview();
+    }
+
+    function updatePreview() {
+        const score1 = document.querySelector('input[name="score1"]').value;
+        const score2 = document.querySelector('input[name="score2"]').value;
+        const preview = document.getElementById('matchPreview');
+        const previewContent = document.getElementById('previewContent');
+        
+        if (selectedPlayers[1] && selectedPlayers[2] && score1 !== '' && score2 !== '') {
+            preview.style.display = 'block';
+            
+            let result = '';
+            if (parseInt(score1) > parseInt(score2)) {
+                result = `<span style="color: var(--primary-green);">Victoire de ${selectedPlayers[1]}</span>`;
+            } else if (parseInt(score2) > parseInt(score1)) {
+                result = `<span style="color: var(--primary-green);">Victoire de ${selectedPlayers[2]}</span>`;
+            } else {
+                result = '<span style="color: var(--gold);">Match nul</span>';
+            }
+            
+            previewContent.innerHTML = `
+                <div style="margin-bottom: 0.5rem;">
+                    <strong>${selectedPlayers[1]}</strong> vs <strong>${selectedPlayers[2]}</strong>
+                </div>
+                <div class="preview-score">${score1} - ${score2}</div>
+                <div style="margin-top: 0.5rem;">${result}</div>
+            `;
+        } else {
+            preview.style.display = 'none';
+        }
+    }
+
+    // Validation du formulaire
+    document.getElementById('matchForm').addEventListener('submit', function(e) {
+        const player1 = document.querySelector('select[name="player1"]').value;
+        const player2 = document.querySelector('select[name="player2"]').value;
+        const score1 = document.querySelector('input[name="score1"]').value;
+        const score2 = document.querySelector('input[name="score2"]').value;
+        
+        if (!player1 || !player2) {
+            e.preventDefault();
+            alert('Veuillez sélectionner les deux joueurs.');
+            return;
+        }
+        
+        if (player1 === player2) {
+            e.preventDefault();
+            alert('Un joueur ne peut pas jouer contre lui-même !');
+            return;
+        }
+        
+        if (score1 === '' || score2 === '') {
+            e.preventDefault();
+            alert('Veuillez saisir les scores des deux joueurs.');
+            return;
+        }
+        
+        // Animation de soumission
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enregistrement...';
+        submitBtn.disabled = true;
+    });
+
+    // Animation des cartes au chargement
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.player-card');
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            
+            setTimeout(() => {
+                card.style.transition = 'all 0.6s ease';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 200);
+        });
+    });
+
+    // Effet sonore simulé pour les interactions
+    document.querySelectorAll('.quick-score-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = 'scale(1)';
+            }, 150);
+        });
+    });
+</script>
+{% endblock %}

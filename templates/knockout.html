@@ -1,0 +1,702 @@
+{% extends "base.html" %}
+
+{% block title %}Phase Éliminatoire - FIFA 25 Tournament{% endblock %}
+
+{% block header_title %}Phase Éliminatoire{% endblock %}
+
+{% block extra_css %}
+<style>
+
+    .tournament-bracket {
+        display: flex;
+        justify-content: space-around;
+        align-items: start;
+        gap: 2rem;
+        margin: 2rem 0;
+        min-height: 600px;
+    }
+
+    .round-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+    }
+
+    .round-title {
+        background: linear-gradient(45deg, var(--primary-green), var(--dark-green));
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 50px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 2rem;
+        box-shadow: 0 5px 15px rgba(0, 255, 65, 0.3);
+        position: relative;
+        z-index: 2;
+    }
+
+    .round-title.final {
+        background: linear-gradient(45deg, var(--gold), #FFA500);
+        color: #000;
+        box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+        animation: goldPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes goldPulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    .matches-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .match-card {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+        backdrop-filter: blur(20px);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        padding: 1.5rem;
+        position: relative;
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .match-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: conic-gradient(from 0deg, transparent, rgba(0, 255, 65, 0.1), transparent);
+        animation: rotate 15s linear infinite;
+        z-index: -1;
+    }
+
+    .match-card:hover {
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .match-card.completed {
+        border-color: var(--primary-green);
+        background: linear-gradient(135deg, rgba(0, 255, 65, 0.2), rgba(0, 179, 45, 0.1));
+    }
+
+    .match-card.final-winner {
+        border-color: var(--gold);
+        background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 165, 0, 0.2));
+        animation: championGlow 2s ease-in-out infinite;
+    }
+
+    @keyframes championGlow {
+        0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+        50% { box-shadow: 0 0 40px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 215, 0, 0.4); }
+    }
+
+    .match-header {
+        text-align: center;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.7);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .player-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.8rem;
+        margin: 0.5rem 0;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .player-row:hover {
+        background: rgba(0, 255, 65, 0.1);
+    }
+
+    .player-row.winner {
+        background: linear-gradient(45deg, rgba(0, 255, 65, 0.2), rgba(0, 179, 45, 0.1));
+        border-left: 4px solid var(--primary-green);
+        font-weight: 600;
+    }
+
+    .player-name {
+        flex: 1;
+        font-weight: 500;
+    }
+
+    .score-input {
+        width: 60px;
+        height: 40px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 8px;
+        text-align: center;
+        font-size: 1.1rem;
+        font-weight: 600;
+        background: rgba(255, 255, 255, 0.9);
+        color: #333;
+        transition: all 0.3s ease;
+    }
+
+    .score-input:focus {
+        outline: none;
+        border-color: var(--primary-green);
+        box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+        transform: scale(1.05);
+    }
+
+    .score-input:disabled {
+        background: rgba(255, 255, 255, 0.5);
+        cursor: not-allowed;
+    }
+
+    .submit-scores-btn {
+        width: 100%;
+        background: linear-gradient(45deg, var(--primary-green), var(--dark-green));
+        color: white;
+        border: none;
+        padding: 1rem;
+        border-radius: 15px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        cursor: pointer;
+        margin-top: 1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0, 255, 65, 0.3);
+    }
+
+    .submit-scores-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 255, 65, 0.4);
+    }
+
+    .submit-scores-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .champion-section {
+        text-align: center;
+        padding: 3rem;
+        background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 165, 0, 0.1));
+        border: 3px solid var(--gold);
+        border-radius: 30px;
+        margin: 2rem 0;
+        position: relative;
+        overflow: hidden;
+        animation: championCelebration 3s ease-in-out infinite;
+    }
+
+    .champion-section::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: conic-gradient(from 0deg, transparent, rgba(255, 215, 0, 0.1), transparent);
+        animation: rotate 10s linear infinite;
+        z-index: -1;
+    }
+
+    .champion-trophy {
+        font-size: 6rem;
+        margin-bottom: 1rem;
+        display: inline-block;
+        animation: trophyBounce 2s ease-in-out infinite;
+        filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.8));
+    }
+
+    .champion-title {
+        font-size: 2rem;
+        font-weight: 900;
+        color: var(--gold);
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        margin-bottom: 1rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        animation: textGlow 2s ease-in-out infinite;
+    }
+
+    .champion-name {
+        font-size: 3rem;
+        font-weight: 900;
+        background: linear-gradient(45deg, var(--gold), #FFA500, var(--gold));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1rem;
+        animation: nameShine 3s ease-in-out infinite;
+    }
+
+    .celebration-effects {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+        overflow: hidden;
+    }
+
+    .celebration-effects::before,
+    .celebration-effects::after {
+        content: '🎉';
+        position: absolute;
+        font-size: 2rem;
+        animation: confetti 2s ease-in-out infinite;
+    }
+
+    .celebration-effects::before {
+        left: 10%;
+        animation-delay: 0.3s;
+    }
+
+    .celebration-effects::after {
+        right: 10%;
+        animation-delay: 0.8s;
+    }
+
+    @keyframes championCelebration {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    @keyframes trophyBounce {
+        0%, 100% { transform: translateY(0) rotate(-5deg); }
+        25% { transform: translateY(-20px) rotate(5deg); }
+        50% { transform: translateY(0) rotate(-5deg); }
+        75% { transform: translateY(-10px) rotate(5deg); }
+    }
+
+    @keyframes textGlow {
+        0%, 100% { text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3), 0 0 10px rgba(255, 215, 0, 0.5); }
+        50% { text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 215, 0, 0.8); }
+    }
+
+    @keyframes nameShine {
+        0% { background-position: -200% center; }
+        100% { background-position: 200% center; }
+    }
+
+    @keyframes confetti {
+        0% {
+            transform: translateY(0) rotate(0deg);
+            opacity: 1;
+        }
+        100% {
+            transform: translateY(-150px) rotate(720deg);
+            opacity: 0;
+        }
+    }
+
+    .bracket-connections {
+        position: absolute;
+        top: 50%;
+        right: -1rem;
+        width: 2rem;
+        height: 2px;
+        background: linear-gradient(90deg, var(--primary-green), transparent);
+        z-index: 1;
+    }
+
+    .bracket-connections::before {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: -5px;
+        width: 0;
+        height: 0;
+        border-left: 10px solid var(--primary-green);
+        border-top: 5px solid transparent;
+        border-bottom: 5px solid transparent;
+    }
+
+    .progress-bar {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        height: 8px;
+        margin: 2rem 0;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        background: linear-gradient(90deg, var(--primary-green), var(--gold));
+        height: 100%;
+        border-radius: 10px;
+        transition: width 1s ease;
+        animation: progressShine 2s ease-in-out infinite;
+    }
+
+    @keyframes progressShine {
+        0% { box-shadow: 0 0 5px rgba(0, 255, 65, 0.5); }
+        50% { box-shadow: 0 0 15px rgba(0, 255, 65, 0.8), 0 0 25px rgba(255, 215, 0, 0.5); }
+        100% { box-shadow: 0 0 5px rgba(0, 255, 65, 0.5); }
+    }
+
+    .tournament-status {
+        text-align: center;
+        margin: 2rem 0;
+        padding: 1rem;
+        background: rgba(0, 255, 65, 0.1);
+        border: 1px solid var(--primary-green);
+        border-radius: 15px;
+    }
+
+    .status-text {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--primary-green);
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .tournament-bracket {
+            flex-direction: column;
+            gap: 3rem;
+        }
+        
+        .round-section {
+            width: 100%;
+        }
+        
+        .matches-container {
+            max-width: 100%;
+        }
+        
+        .bracket-connections {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Barre de progression du tournoi -->
+<div class="tournament-status">
+    <div class="status-text">
+        {% set total_matches = quarter_matches|length + semi_matches|length + (1 if final_match else 0) %}
+        {% set completed_matches = (quarter_matches|selectattr('winner_id')|list|length) + (semi_matches|selectattr('winner_id')|list|length) + (1 if final_match and final_match.winner_id else 0) %}
+        Progression du tournoi : {{ completed_matches }}/{{ total_matches }} matchs terminés
+    </div>
+    <div class="progress-bar">
+        <div class="progress-fill" style="width: {{ (completed_matches / total_matches * 100) if total_matches > 0 else 0 }}%;"></div>
+    </div>
+</div>
+
+<div class="tournament-bracket">
+    <!-- Quarts de finale -->
+    {% if quarter_matches %}
+    <div class="round-section">
+        <div class="round-title">
+            <i class="fas fa-medal"></i>
+            Quarts de Finale
+        </div>
+        <div class="bracket-connections"></div>
+        
+        <form method="POST" action="{{ url_for('update_all_quarters') }}">
+            <div class="matches-container">
+                {% for match in quarter_matches %}
+                <div class="match-card {% if match.winner_id %}completed{% endif %}">
+                    <div class="match-header">
+                        <i class="fas fa-swords"></i>
+                        Quart #{{ match.match_number }}
+                    </div>
+                    
+                    <input type="hidden" name="match_ids[]" value="{{ match.id }}">
+                    
+                    <div class="player-row {% if match.winner_id == match.player1_id %}winner{% endif %}">
+                        <span class="player-name">
+                            <i class="fas fa-user"></i>
+                            {{ match.player1.username }}
+                        </span>
+                        <input type="number" name="score1_{{ match.id }}" class="score-input" 
+                               value="{{ match.player1_score or '' }}" min="0" max="20"
+                               {% if match.winner_id %}disabled{% endif %}>
+                    </div>
+                    
+                    <div class="player-row {% if match.winner_id == match.player2_id %}winner{% endif %}">
+                        <span class="player-name">
+                            <i class="fas fa-user"></i>
+                            {{ match.player2.username }}
+                        </span>
+                        <input type="number" name="score2_{{ match.id }}" class="score-input" 
+                               value="{{ match.player2_score or '' }}" min="0" max="20"
+                               {% if match.winner_id %}disabled{% endif %}>
+                    </div>
+                    
+                    {% if match.winner_id %}
+                    <div style="text-align: center; margin-top: 1rem; color: var(--primary-green); font-weight: 600;">
+                        <i class="fas fa-trophy"></i>
+                        Gagnant : {{ match.winner.username }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            
+            {% set unfinished_quarters = quarter_matches|rejectattr('winner_id')|list %}
+            {% if unfinished_quarters %}
+            <button type="submit" class="submit-scores-btn">
+                <i class="fas fa-check-circle"></i>
+                Valider les Scores
+            </button>
+            {% endif %}
+        </form>
+    </div>
+    {% endif %}
+
+    <!-- Demi-finales -->
+    {% if semi_matches %}
+    <div class="round-section">
+        <div class="round-title">
+            <i class="fas fa-crown"></i>
+            Demi-Finales
+        </div>
+        <div class="bracket-connections"></div>
+        
+        <form method="POST" action="{{ url_for('update_all_semis') }}">
+            <div class="matches-container">
+                {% for match in semi_matches %}
+                <div class="match-card {% if match.winner_id %}completed{% endif %}">
+                    <div class="match-header">
+                        <i class="fas fa-fire"></i>
+                        Demi #{{ match.match_number }}
+                    </div>
+                    
+                    <input type="hidden" name="match_ids[]" value="{{ match.id }}">
+                    
+                    <div class="player-row {% if match.winner_id == match.player1_id %}winner{% endif %}">
+                        <span class="player-name">
+                            <i class="fas fa-user-ninja"></i>
+                            {{ match.player1.username }}
+                        </span>
+                        <input type="number" name="score1_{{ match.id }}" class="score-input" 
+                               value="{{ match.player1_score or '' }}" min="0" max="20"
+                               {% if match.winner_id %}disabled{% endif %}>
+                    </div>
+                    
+                    <div class="player-row {% if match.winner_id == match.player2_id %}winner{% endif %}">
+                        <span class="player-name">
+                            <i class="fas fa-user-ninja"></i>
+                            {{ match.player2.username }}
+                        </span>
+                        <input type="number" name="score2_{{ match.id }}" class="score-input" 
+                               value="{{ match.player2_score or '' }}" min="0" max="20"
+                               {% if match.winner_id %}disabled{% endif %}>
+                    </div>
+                    
+                    {% if match.winner_id %}
+                    <div style="text-align: center; margin-top: 1rem; color: var(--primary-green); font-weight: 600;">
+                        <i class="fas fa-trophy"></i>
+                        Gagnant : {{ match.winner.username }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            
+            {% set unfinished_semis = semi_matches|rejectattr('winner_id')|list %}
+            {% if unfinished_semis %}
+            <button type="submit" class="submit-scores-btn">
+                <i class="fas fa-check-circle"></i>
+                Valider les Scores
+            </button>
+            {% endif %}
+        </form>
+    </div>
+    {% endif %}
+
+    <!-- Finale -->
+    {% if final_match %}
+    <div class="round-section">
+        <div class="round-title final">
+            <i class="fas fa-trophy"></i>
+            FINALE
+        </div>
+        
+        <div class="matches-container">
+            <div class="match-card {% if final_match.winner_id %}final-winner{% endif %}">
+                {% if not final_match.winner_id %}
+                <div class="match-header">
+                    <i class="fas fa-star"></i>
+                    Match Décisif
+                </div>
+                
+                <form method="POST" action="{{ url_for('update_knockout_match', match_id=final_match.id) }}">
+                    <div class="player-row">
+                        <span class="player-name">
+                            <i class="fas fa-chess-king"></i>
+                            {{ final_match.player1.username }}
+                        </span>
+                        <input type="number" name="score1" class="score-input" 
+                               value="{{ final_match.player1_score or '' }}" min="0" max="20">
+                    </div>
+                    
+                    <div class="player-row">
+                        <span class="player-name">
+                            <i class="fas fa-chess-king"></i>
+                            {{ final_match.player2.username }}
+                        </span>
+                        <input type="number" name="score2" class="score-input" 
+                               value="{{ final_match.player2_score or '' }}" min="0" max="20">
+                    </div>
+                    
+                    <button type="submit" class="submit-scores-btn" style="background: linear-gradient(45deg, var(--gold), #FFA500); color: #000;">
+                        <i class="fas fa-crown"></i>
+                        Couronner le Champion
+                    </button>
+                </form>
+                {% else %}
+                <div class="champion-section">
+                    <div class="celebration-effects"></div>
+                    <div class="champion-trophy">🏆</div>
+                    <div class="champion-title">CHAMPION FIFA 25</div>
+                    <div class="champion-name">{{ final_match.winner.username }}</div>
+                    <div style="font-size: 1.2rem; color: rgba(255, 255, 255, 0.9); margin-top: 1rem;">
+                        Score final : {{ final_match.player1_score }} - {{ final_match.player2_score }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Animation des cartes au chargement
+    document.addEventListener('DOMContentLoaded', function() {
+        const matchCards = document.querySelectorAll('.match-card');
+        
+        matchCards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            
+            setTimeout(() => {
+                card.style.transition = 'all 0.6s ease';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 200);
+        });
+        
+        // Animation de la barre de progression
+        const progressBar = document.querySelector('.progress-fill');
+        if (progressBar) {
+            const targetWidth = progressBar.style.width;
+            progressBar.style.width = '0%';
+            
+            setTimeout(() => {
+                progressBar.style.width = targetWidth;
+            }, 1000);
+        }
+    });
+    
+    // Validation des scores
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const scoreInputs = this.querySelectorAll('.score-input:not([disabled])');
+            let hasEmptyScores = false;
+            
+            scoreInputs.forEach(input => {
+                if (input.value === '' || input.value === null) {
+                    hasEmptyScores = true;
+                    input.style.borderColor = '#ff4444';
+                } else {
+                    input.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                }
+            });
+            
+            if (hasEmptyScores) {
+                e.preventDefault();
+                alert('Veuillez saisir tous les scores avant de valider.');
+                return;
+            }
+            
+            // Animation de soumission
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Validation...';
+                submitBtn.disabled = true;
+            }
+        });
+    });
+    
+    // Effets sonores simulés
+    document.querySelectorAll('.score-input').forEach(input => {
+        input.addEventListener('focus', function() {
+            this.style.transform = 'scale(1.05)';
+        });
+        
+        input.addEventListener('blur', function() {
+            this.style.transform = 'scale(1)';
+        });
+    });
+    
+    // Animation spéciale pour le champion
+    const championSection = document.querySelector('.champion-section');
+    if (championSection) {
+        // Créer des confettis dynamiques
+        function createConfetti() {
+            const confetti = document.createElement('div');
+            confetti.innerHTML = ['🎉', '🏆', '⭐', '🎊'][Math.floor(Math.random() * 4)];
+            confetti.style.position = 'absolute';
+            confetti.style.fontSize = Math.random() * 20 + 10 + 'px';
+            confetti.style.left = Math.random() * 100 + '%';
+            confetti.style.top = '0';
+            confetti.style.pointerEvents = 'none';
+            confetti.style.animation = `confetti ${Math.random() * 2 + 2}s ease-out forwards`;
+            
+            championSection.appendChild(confetti);
+            
+            setTimeout(() => {
+                confetti.remove();
+            }, 4000);
+        }
+        
+        // Lancer des confettis périodiquement
+        setInterval(createConfetti, 500);
+    }
+    
+    // Mise à jour en temps réel des gagnants
+    document.querySelectorAll('.score-input').forEach(input => {
+        input.addEventListener('input', function() {
+            const matchCard = this.closest('.match-card');
+            const playerRows = matchCard.querySelectorAll('.player-row');
+            const score1Input = matchCard.querySelector('input[name*="score1"]');
+            const score2Input = matchCard.querySelector('input[name*="score2"]');
+            
+            if (score1Input && score2Input && score1Input.value && score2Input.value) {
+                const score1 = parseInt(score1Input.value);
+                const score2 = parseInt(score2Input.value);
+                
+                playerRows.forEach(row => row.classList.remove('winner'));
+                
+                if (score1 > score2) {
+                    playerRows[0].classList.add('winner');
+                } else if (score2 > score1) {
+                    playerRows[1].classList.add('winner');
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

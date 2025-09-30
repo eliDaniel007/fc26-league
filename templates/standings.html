@@ -1,0 +1,445 @@
+{% extends "base.html" %}
+
+{% block title %}Classements FC 26{% endblock %}
+
+{% block header_title %}🏆 Classements FC 26 🏆{% endblock %}
+
+{% block content %}
+<div class="glass-card">
+    <h2 style="color: var(--fc-electric-blue); font-size: 2rem; margin-bottom: 1rem; text-align: center;">
+        <i class="fas fa-trophy"></i>
+        {% if season %}
+        {{ season.name }} - Classements Semaine {{ season.current_week }}
+        {% else %}
+        Classements FC 26
+        {% endif %}
+    </h2>
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <div style="display: inline-flex; gap: 2rem; align-items: center; flex-wrap: wrap; justify-content: center;">
+            <div style="background: linear-gradient(45deg, var(--fc-electric-blue), var(--fc-cyber-purple)); padding: 1rem 2rem; border-radius: 15px;">
+                <strong style="color: white;">Classement par Points</strong>
+            </div>
+            <div style="background: linear-gradient(45deg, var(--fc-neon-green), var(--fc-neon-orange)); padding: 1rem 2rem; border-radius: 15px;">
+                <strong style="color: black;">Moyenne de Buts Incluse</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+    <!-- Classement Hebdomadaire -->
+    <div class="glass-card">
+        <h3 style="color: var(--fc-neon-orange); font-size: 1.8rem; margin-bottom: 1.5rem; text-align: center;">
+            <i class="fas fa-calendar-week"></i> 
+            Classement Semaine {{ season.current_week if season else 1 }}
+        </h3>
+        
+        {% if weekly_standings %}
+        <div style="overflow-x: auto;">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-hashtag"></i> Pos</th>
+                        <th><i class="fas fa-user"></i> Joueur</th>
+                        <th><i class="fas fa-futbol"></i> MJ</th>
+                        <th><i class="fas fa-trophy"></i> V</th>
+                        <th><i class="fas fa-handshake"></i> N</th>
+                        <th><i class="fas fa-times"></i> D</th>
+                        <th><i class="fas fa-star"></i> Pts</th>
+                        <th><i class="fas fa-chart-line"></i> Moy</th>
+                        <th><i class="fas fa-plus-minus"></i> +/-</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for standing in weekly_standings %}
+                    <tr class="position-{{ loop.index if loop.index <= 3 else '' }}"
+                        style="{% if loop.index <= 3 %}font-weight: 600;{% endif %}">
+                        <td>
+                            <strong style="font-size: 1.1rem;">
+                                {% if loop.index == 1 %}🥇
+                                {% elif loop.index == 2 %}🥈
+                                {% elif loop.index == 3 %}🥉
+                                {% else %}{{ loop.index }}{% endif %}
+                            </strong>
+                        </td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div style="width: 30px; height: 30px; background: linear-gradient(45deg, var(--fc-electric-blue), var(--fc-cyber-purple)); 
+                                            border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-user" style="color: white; font-size: 0.8rem;"></i>
+                                </div>
+                                <strong style="color: {% if loop.index == 1 %}var(--fc-gold){% elif loop.index == 2 %}var(--fc-silver){% elif loop.index == 3 %}var(--fc-bronze){% else %}white{% endif %};">
+                                    {{ standing.player.name }}
+                                </strong>
+                            </div>
+                        </td>
+                        <td><span style="color: var(--fc-electric-blue);">{{ standing.matches_played }}</span></td>
+                        <td><span style="color: var(--fc-neon-green); font-weight: bold;">{{ standing.wins }}</span></td>
+                        <td><span style="color: var(--fc-volt-yellow);">{{ standing.draws }}</span></td>
+                        <td><span style="color: var(--fc-plasma-pink);">{{ standing.losses }}</span></td>
+                        <td>
+                            <strong style="color: {% if loop.index == 1 %}var(--fc-gold){% elif loop.index == 2 %}var(--fc-silver){% elif loop.index == 3 %}var(--fc-bronze){% else %}var(--fc-neon-green){% endif %}; font-size: 1.1rem;">
+                                {{ standing.points }}
+                            </strong>
+                        </td>
+                        <td>
+                            <span style="color: var(--fc-cyber-purple); font-weight: 600;">
+                                {{ standing.goal_average }}
+                            </span>
+                        </td>
+                        <td>
+                            <span style="color: {% if standing.goal_difference > 0 %}var(--fc-neon-green){% elif standing.goal_difference < 0 %}var(--fc-plasma-pink){% else %}white{% endif %};">
+                                {% if standing.goal_difference > 0 %}+{% endif %}{{ standing.goal_difference }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Statistiques de la semaine -->
+        <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(255, 107, 53, 0.1); border-radius: 15px;">
+            <h4 style="color: var(--fc-neon-orange); margin-bottom: 1rem; text-align: center;">
+                <i class="fas fa-chart-bar"></i> Stats de la Semaine
+            </h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; text-align: center;">
+                {% if weekly_standings %}
+                    {% set total_goals = weekly_standings | sum(attribute='goals_for') %}
+                    {% set total_matches = weekly_standings | sum(attribute='matches_played') %}
+                    {% set avg_goals_per_match = (total_goals / total_matches) if total_matches > 0 else 0 %}
+                    
+                    <div>
+                        <div style="color: var(--fc-neon-green); font-size: 1.5rem; font-weight: bold;">{{ total_goals }}</div>
+                        <div style="color: white; font-size: 0.8rem;">Buts totaux</div>
+                    </div>
+                    <div>
+                        <div style="color: var(--fc-electric-blue); font-size: 1.5rem; font-weight: bold;">{{ total_matches }}</div>
+                        <div style="color: white; font-size: 0.8rem;">Matchs joués</div>
+                    </div>
+                    <div>
+                        <div style="color: var(--fc-cyber-purple); font-size: 1.5rem; font-weight: bold;">{{ "%.1f"|format(avg_goals_per_match) }}</div>
+                        <div style="color: white; font-size: 0.8rem;">Moy/Match</div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% else %}
+        <div style="text-align: center; padding: 3rem; background: rgba(255, 20, 147, 0.1); border-radius: 15px; border: 2px dashed var(--fc-plasma-pink);">
+            <i class="fas fa-calendar-times" style="font-size: 3rem; color: var(--fc-plasma-pink); margin-bottom: 1rem;"></i>
+            <h4 style="color: var(--fc-plasma-pink); margin-bottom: 0.5rem;">Aucune donnée cette semaine</h4>
+            <p style="color: rgba(255, 255, 255, 0.6);">Les matchs de la semaine n'ont pas encore été joués.</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Classement Cumulé -->
+    <div class="glass-card">
+        <h3 style="color: var(--fc-plasma-pink); font-size: 1.8rem; margin-bottom: 1.5rem; text-align: center;">
+            <i class="fas fa-chart-line"></i> 
+            Classement Général (Cumulé)
+        </h3>
+        
+        {% if cumulative_standings %}
+        <div style="overflow-x: auto;">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-hashtag"></i> Pos</th>
+                        <th><i class="fas fa-user"></i> Joueur</th>
+                        <th><i class="fas fa-futbol"></i> MJ</th>
+                        <th><i class="fas fa-trophy"></i> V</th>
+                        <th><i class="fas fa-handshake"></i> N</th>
+                        <th><i class="fas fa-times"></i> D</th>
+                        <th><i class="fas fa-star"></i> Pts</th>
+                        <th><i class="fas fa-chart-line"></i> Moy</th>
+                        <th><i class="fas fa-plus-minus"></i> +/-</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for standing in cumulative_standings %}
+                    <tr class="position-{{ loop.index if loop.index <= 3 else '' }}"
+                        style="{% if loop.index <= 3 %}font-weight: 600;{% endif %}">
+                        <td>
+                            <strong style="font-size: 1.1rem;">
+                                {% if loop.index == 1 %}👑
+                                {% elif loop.index == 2 %}🥈
+                                {% elif loop.index == 3 %}🥉
+                                {% else %}{{ loop.index }}{% endif %}
+                            </strong>
+                        </td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div style="width: 30px; height: 30px; background: linear-gradient(45deg, var(--fc-plasma-pink), var(--fc-neon-orange)); 
+                                            border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-user" style="color: white; font-size: 0.8rem;"></i>
+                                </div>
+                                <strong style="color: {% if loop.index == 1 %}var(--fc-gold){% elif loop.index == 2 %}var(--fc-silver){% elif loop.index == 3 %}var(--fc-bronze){% else %}white{% endif %};">
+                                    {{ standing.player.name }}
+                                    {% if loop.index == 1 %}
+                                    <span style="margin-left: 0.5rem;">👑</span>
+                                    {% endif %}
+                                </strong>
+                            </div>
+                        </td>
+                        <td><span style="color: var(--fc-electric-blue);">{{ standing.matches_played }}</span></td>
+                        <td><span style="color: var(--fc-neon-green); font-weight: bold;">{{ standing.wins }}</span></td>
+                        <td><span style="color: var(--fc-volt-yellow);">{{ standing.draws }}</span></td>
+                        <td><span style="color: var(--fc-plasma-pink);">{{ standing.losses }}</span></td>
+                        <td>
+                            <strong style="color: {% if loop.index == 1 %}var(--fc-gold){% elif loop.index == 2 %}var(--fc-silver){% elif loop.index == 3 %}var(--fc-bronze){% else %}var(--fc-neon-green){% endif %}; font-size: 1.1rem;">
+                                {{ standing.points }}
+                            </strong>
+                        </td>
+                        <td>
+                            <span style="color: var(--fc-cyber-purple); font-weight: 600;">
+                                {{ standing.goal_average }}
+                            </span>
+                        </td>
+                        <td>
+                            <span style="color: {% if standing.goal_difference > 0 %}var(--fc-neon-green){% elif standing.goal_difference < 0 %}var(--fc-plasma-pink){% else %}white{% endif %};">
+                                {% if standing.goal_difference > 0 %}+{% endif %}{{ standing.goal_difference }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Statistiques générales -->
+        <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(255, 20, 147, 0.1); border-radius: 15px;">
+            <h4 style="color: var(--fc-plasma-pink); margin-bottom: 1rem; text-align: center;">
+                <i class="fas fa-chart-pie"></i> Stats Générales de la Saison
+            </h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; text-align: center;">
+                {% if cumulative_standings %}
+                    {% set total_goals = cumulative_standings | sum(attribute='goals_for') %}
+                    {% set total_matches = cumulative_standings | sum(attribute='matches_played') %}
+                    {% set avg_goals_per_match = (total_goals / total_matches) if total_matches > 0 else 0 %}
+                    
+                    <div>
+                        <div style="color: var(--fc-neon-green); font-size: 1.5rem; font-weight: bold;">{{ total_goals }}</div>
+                        <div style="color: white; font-size: 0.8rem;">Buts saison</div>
+                    </div>
+                    <div>
+                        <div style="color: var(--fc-electric-blue); font-size: 1.5rem; font-weight: bold;">{{ total_matches }}</div>
+                        <div style="color: white; font-size: 0.8rem;">Matchs joués</div>
+                    </div>
+                    <div>
+                        <div style="color: var(--fc-cyber-purple); font-size: 1.5rem; font-weight: bold;">{{ "%.1f"|format(avg_goals_per_match) }}</div>
+                        <div style="color: white; font-size: 0.8rem;">Moy saison</div>
+                    </div>
+                    <div>
+                        <div style="color: var(--fc-volt-yellow); font-size: 1.5rem; font-weight: bold;">
+                            {{ season.current_week if season else 0 }}
+                        </div>
+                        <div style="color: white; font-size: 0.8rem;">Semaines</div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% else %}
+        <div style="text-align: center; padding: 3rem; background: rgba(255, 20, 147, 0.1); border-radius: 15px; border: 2px dashed var(--fc-plasma-pink);">
+            <i class="fas fa-chart-line" style="font-size: 3rem; color: var(--fc-plasma-pink); margin-bottom: 1rem;"></i>
+            <h4 style="color: var(--fc-plasma-pink); margin-bottom: 0.5rem;">Aucune donnée disponible</h4>
+            <p style="color: rgba(255, 255, 255, 0.6);">Aucun match n'a encore été joué cette saison.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Podium et Records -->
+{% if cumulative_standings and cumulative_standings|length >= 3 %}
+<div class="glass-card">
+    <h3 style="color: var(--fc-gold); font-size: 1.8rem; margin-bottom: 2rem; text-align: center;">
+        <i class="fas fa-podium"></i> Podium Actuel
+    </h3>
+    
+    <div style="display: flex; justify-content: center; align-items: end; gap: 2rem; margin-bottom: 3rem; flex-wrap: wrap;">
+        <!-- 2ème place -->
+        <div style="text-align: center; order: 1;">
+            <div style="width: 100px; height: 120px; background: linear-gradient(45deg, var(--fc-silver), #A8A8A8); 
+                        border-radius: 15px 15px 0 0; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;
+                        box-shadow: 0 10px 25px rgba(192, 192, 192, 0.3);">
+                <span style="font-size: 3rem;">🥈</span>
+            </div>
+            <div style="background: rgba(192, 192, 192, 0.1); padding: 1rem; border-radius: 15px; min-width: 150px;">
+                <h4 style="color: var(--fc-silver); margin: 0; font-size: 1.1rem;">{{ cumulative_standings[1].player.name }}</h4>
+                <p style="color: white; margin: 0.25rem 0 0 0; font-size: 1.2rem; font-weight: bold;">{{ cumulative_standings[1].points }} pts</p>
+                <p style="color: var(--fc-cyber-purple); margin: 0; font-size: 0.9rem;">{{ cumulative_standings[1].goal_average }} moy.</p>
+            </div>
+        </div>
+        
+        <!-- 1ère place -->
+        <div style="text-align: center; order: 2;">
+            <div style="width: 120px; height: 150px; background: linear-gradient(45deg, var(--fc-gold), #FFB700); 
+                        border-radius: 15px 15px 0 0; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;
+                        box-shadow: 0 15px 35px rgba(255, 215, 0, 0.4); animation: goldGlow 2s ease-in-out infinite;">
+                <span style="font-size: 4rem;">👑</span>
+            </div>
+            <div style="background: rgba(255, 215, 0, 0.1); padding: 1.5rem; border-radius: 15px; min-width: 180px;">
+                <h4 style="color: var(--fc-gold); margin: 0; font-size: 1.3rem; font-weight: bold;">{{ cumulative_standings[0].player.name }}</h4>
+                <p style="color: white; margin: 0.25rem 0 0 0; font-size: 1.5rem; font-weight: bold;">{{ cumulative_standings[0].points }} pts</p>
+                <p style="color: var(--fc-cyber-purple); margin: 0; font-size: 1rem;">{{ cumulative_standings[0].goal_average }} moy.</p>
+            </div>
+        </div>
+        
+        <!-- 3ème place -->
+        <div style="text-align: center; order: 3;">
+            <div style="width: 80px; height: 100px; background: linear-gradient(45deg, var(--fc-bronze), #B87333); 
+                        border-radius: 15px 15px 0 0; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;
+                        box-shadow: 0 8px 20px rgba(205, 127, 50, 0.3);">
+                <span style="font-size: 2.5rem;">🥉</span>
+            </div>
+            <div style="background: rgba(205, 127, 50, 0.1); padding: 1rem; border-radius: 15px; min-width: 130px;">
+                <h4 style="color: var(--fc-bronze); margin: 0; font-size: 1rem;">{{ cumulative_standings[2].player.name }}</h4>
+                <p style="color: white; margin: 0.25rem 0 0 0; font-size: 1.1rem; font-weight: bold;">{{ cumulative_standings[2].points }} pts</p>
+                <p style="color: var(--fc-cyber-purple); margin: 0; font-size: 0.85rem;">{{ cumulative_standings[2].goal_average }} moy.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Records et Statistiques Avancées -->
+{% if cumulative_standings %}
+<div class="glass-card">
+    <h3 style="color: var(--fc-cyber-purple); font-size: 1.8rem; margin-bottom: 2rem; text-align: center;">
+        <i class="fas fa-medal"></i> Records de la Saison
+    </h3>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+        {% set best_scorer = cumulative_standings | max(attribute='goals_for') %}
+        {% set best_average = cumulative_standings | max(attribute='goal_average') %}
+        {% set most_wins = cumulative_standings | max(attribute='wins') %}
+        {% set most_played = cumulative_standings | max(attribute='matches_played') %}
+        
+        <div style="padding: 1.5rem; background: rgba(0, 255, 136, 0.1); border-radius: 15px; border: 2px solid var(--fc-neon-green); text-align: center;">
+            <i class="fas fa-futbol" style="font-size: 2rem; color: var(--fc-neon-green); margin-bottom: 1rem;"></i>
+            <h4 style="color: var(--fc-neon-green); margin-bottom: 0.5rem;">Meilleur Buteur</h4>
+            <p style="color: white; font-size: 1.1rem; margin: 0;">
+                {% for standing in cumulative_standings %}
+                    {% if standing.goals_for == best_scorer %}
+                        <strong>{{ standing.player.name }}</strong><br>
+                        <span style="font-size: 1.5rem; color: var(--fc-neon-green);">{{ standing.goals_for }} buts</span>
+                    {% endif %}
+                {% endfor %}
+            </p>
+        </div>
+        
+        <div style="padding: 1.5rem; background: rgba(138, 43, 226, 0.1); border-radius: 15px; border: 2px solid var(--fc-cyber-purple); text-align: center;">
+            <i class="fas fa-chart-line" style="font-size: 2rem; color: var(--fc-cyber-purple); margin-bottom: 1rem;"></i>
+            <h4 style="color: var(--fc-cyber-purple); margin-bottom: 0.5rem;">Meilleure Moyenne</h4>
+            <p style="color: white; font-size: 1.1rem; margin: 0;">
+                {% for standing in cumulative_standings %}
+                    {% if standing.goal_average == best_average %}
+                        <strong>{{ standing.player.name }}</strong><br>
+                        <span style="font-size: 1.5rem; color: var(--fc-cyber-purple);">{{ standing.goal_average }} moy.</span>
+                    {% endif %}
+                {% endfor %}
+            </p>
+        </div>
+        
+        <div style="padding: 1.5rem; background: rgba(255, 215, 0, 0.1); border-radius: 15px; border: 2px solid var(--fc-gold); text-align: center;">
+            <i class="fas fa-trophy" style="font-size: 2rem; color: var(--fc-gold); margin-bottom: 1rem;"></i>
+            <h4 style="color: var(--fc-gold); margin-bottom: 0.5rem;">Plus de Victoires</h4>
+            <p style="color: white; font-size: 1.1rem; margin: 0;">
+                {% for standing in cumulative_standings %}
+                    {% if standing.wins == most_wins %}
+                        <strong>{{ standing.player.name }}</strong><br>
+                        <span style="font-size: 1.5rem; color: var(--fc-gold);">{{ standing.wins }} victoires</span>
+                    {% endif %}
+                {% endfor %}
+            </p>
+        </div>
+        
+        <div style="padding: 1.5rem; background: rgba(0, 212, 255, 0.1); border-radius: 15px; border: 2px solid var(--fc-electric-blue); text-align: center;">
+            <i class="fas fa-gamepad" style="font-size: 2rem; color: var(--fc-electric-blue); margin-bottom: 1rem;"></i>
+            <h4 style="color: var(--fc-electric-blue); margin-bottom: 0.5rem;">Plus Actif</h4>
+            <p style="color: white; font-size: 1.1rem; margin: 0;">
+                {% for standing in cumulative_standings %}
+                    {% if standing.matches_played == most_played %}
+                        <strong>{{ standing.player.name }}</strong><br>
+                        <span style="font-size: 1.5rem; color: var(--fc-electric-blue);">{{ standing.matches_played }} matchs</span>
+                    {% endif %}
+                {% endfor %}
+            </p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Légende des classements -->
+<div class="glass-card">
+    <h3 style="color: var(--fc-neon-orange); font-size: 1.5rem; margin-bottom: 1rem; text-align: center;">
+        <i class="fas fa-info-circle"></i> Système de Classement FC 26
+    </h3>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+        <div style="padding: 1rem; background: rgba(0, 255, 136, 0.05); border-left: 4px solid var(--fc-neon-green); border-radius: 10px;">
+            <h4 style="color: var(--fc-neon-green); margin-bottom: 0.5rem;">
+                <i class="fas fa-calculator"></i> Points
+            </h4>
+            <p style="color: rgba(255, 255, 255, 0.8); margin: 0; font-size: 0.9rem;">
+                Victoire = 3 pts, Match nul = 1 pt, Défaite = 0 pt
+            </p>
+        </div>
+        
+        <div style="padding: 1rem; background: rgba(138, 43, 226, 0.05); border-left: 4px solid var(--fc-cyber-purple); border-radius: 10px;">
+            <h4 style="color: var(--fc-cyber-purple); margin-bottom: 0.5rem;">
+                <i class="fas fa-chart-line"></i> Moyenne
+            </h4>
+            <p style="color: rgba(255, 255, 255, 0.8); margin: 0; font-size: 0.9rem;">
+                Buts marqués ÷ Matchs joués
+            </p>
+        </div>
+        
+        <div style="padding: 1rem; background: rgba(255, 107, 53, 0.05); border-left: 4px solid var(--fc-neon-orange); border-radius: 10px;">
+            <h4 style="color: var(--fc-neon-orange); margin-bottom: 0.5rem;">
+                <i class="fas fa-sort"></i> Tri
+            </h4>
+            <p style="color: rgba(255, 255, 255, 0.8); margin: 0; font-size: 0.9rem;">
+                1° Points, 2° Moyenne, 3° Différence de buts
+            </p>
+        </div>
+        
+        <div style="padding: 1rem; background: rgba(0, 212, 255, 0.05); border-left: 4px solid var(--fc-electric-blue); border-radius: 10px;">
+            <h4 style="color: var(--fc-electric-blue); margin-bottom: 0.5rem;">
+                <i class="fas fa-calendar-week"></i> Semaines
+            </h4>
+            <p style="color: rgba(255, 255, 255, 0.8); margin: 0; font-size: 0.9rem;">
+                5 joueurs × 4 matchs = 10 matchs par semaine
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+@media (max-width: 768px) {
+    .glass-card div[style*="display: grid"] {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .modern-table {
+        font-size: 0.8rem;
+    }
+    
+    .modern-table th, .modern-table td {
+        padding: 0.5rem;
+    }
+    
+    div[style*="display: flex"][style*="justify-content: center"] {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    div[style*="order:"] {
+        order: unset !important;
+        margin-bottom: 1rem;
+    }
+}
+</style>
+{% endblock %}

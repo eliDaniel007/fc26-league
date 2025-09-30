@@ -1,0 +1,405 @@
+{% extends "base.html" %}
+
+{% block title %}Ajouter des Participants - FIFA 25 Tournament{% endblock %}
+
+{% block header_title %}Gestion des Joueurs{% endblock %}
+
+{% block extra_css %}
+<style>
+    .add-form {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .add-form::before {
+        content: '⚽';
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        font-size: 3rem;
+        opacity: 0.1;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    .form-row {
+        display: flex;
+        gap: 1rem;
+        align-items: end;
+    }
+
+    .form-row .form-group {
+        flex: 1;
+    }
+
+    .form-row .btn {
+        margin-bottom: 0;
+        height: fit-content;
+    }
+
+    .participants-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .participant-card {
+        background: linear-gradient(135deg, rgba(0, 255, 65, 0.1), rgba(0, 179, 45, 0.05));
+        border: 1px solid var(--primary-green);
+        border-radius: 15px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .participant-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: conic-gradient(from 0deg, transparent, rgba(0, 255, 65, 0.05), transparent);
+        animation: rotate 15s linear infinite;
+        z-index: -1;
+    }
+
+    .participant-card:hover {
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 10px 25px rgba(0, 255, 65, 0.2);
+        border-color: var(--gold);
+    }
+
+    .participant-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, var(--primary-green), var(--dark-green));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 1.5rem;
+        color: white;
+    }
+
+    .participant-name {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: white;
+    }
+
+    .participant-number {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 1rem;
+    }
+
+    .delete-btn {
+        background: linear-gradient(45deg, #ff4444, #cc0000);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .delete-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 68, 68, 0.3);
+    }
+
+    .confirm-dialog {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.8);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(240, 240, 240, 0.95));
+        backdrop-filter: blur(20px);
+        padding: 2rem;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        display: none;
+        z-index: 1000;
+        color: #333;
+        text-align: center;
+        max-width: 400px;
+        width: 90%;
+        transition: all 0.3s ease;
+    }
+
+    .confirm-dialog.show {
+        transform: translate(-50%, -50%) scale(1);
+        display: block;
+    }
+
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(5px);
+        display: none;
+        z-index: 999;
+        transition: all 0.3s ease;
+    }
+
+    .overlay.show {
+        display: block;
+    }
+
+    .confirm-dialog h3 {
+        color: #333;
+        margin-bottom: 1rem;
+        font-size: 1.3rem;
+    }
+
+    .confirm-dialog p {
+        color: #666;
+        margin-bottom: 1rem;
+        line-height: 1.5;
+    }
+
+    .dialog-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 1.5rem;
+    }
+
+    .dialog-buttons .btn {
+        padding: 0.7rem 1.5rem;
+        font-size: 0.9rem;
+    }
+
+    .btn-cancel {
+        background: linear-gradient(45deg, #666, #555);
+        color: white;
+    }
+
+    .btn-cancel:hover {
+        background: linear-gradient(45deg, #555, #444);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        opacity: 0.7;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        color: var(--primary-green);
+    }
+
+    .stats-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-item {
+        background: linear-gradient(135deg, rgba(0, 255, 65, 0.1), rgba(0, 179, 45, 0.05));
+        border: 1px solid var(--primary-green);
+        border-radius: 10px;
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-green);
+        display: block;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Statistiques rapides -->
+<div class="stats-summary">
+    <div class="stat-item">
+        <span class="stat-number">{{ participants|length }}</span>
+        <span class="stat-label">Joueurs Inscrits</span>
+    </div>
+    <div class="stat-item">
+        <span class="stat-number">{{ participants|length - 4 if participants|length >= 4 else 0 }}</span>
+        <span class="stat-label">Places Restantes</span>
+    </div>
+    <div class="stat-item">
+        <span class="stat-number">{{ (participants|length // 2) if participants|length >= 4 and (participants|length // 2) % 2 == 0 else (participants|length // 2) - 1 if participants|length >= 4 else 0 }}</span>
+        <span class="stat-label">Qualifiés Potentiels</span>
+    </div>
+</div>
+
+<div class="glass-card add-form">
+    <h2><i class="fas fa-user-plus"></i> Ajouter un Nouveau Joueur</h2>
+    <form method="POST" action="{{ url_for('add_participant') }}">
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-user"></i>
+                    Nom du joueur
+                </label>
+                <input type="text" name="username" class="form-input" required 
+                       placeholder="Entrez le nom du joueur" 
+                       autocomplete="off"
+                       maxlength="50">
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-plus"></i>
+                Ajouter
+            </button>
+        </div>
+    </form>
+</div>
+
+<div class="glass-card">
+    <h2><i class="fas fa-users"></i> Joueurs Inscrits ({{ participants|length }})</h2>
+    
+    {% if participants %}
+        <div class="participants-grid">
+            {% for participant in participants %}
+            <div class="participant-card">
+                <div class="participant-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="participant-name">{{ participant.username }}</div>
+                <div class="participant-number">Joueur #{{ loop.index }}</div>
+                <a href="#" class="delete-btn" 
+                   data-username="{{ participant.username }}"
+                   data-url="{{ url_for('delete_participant', user_id=participant.id) }}"
+                   onclick="confirmDelete(this.dataset.username, this.dataset.url)">
+                    <i class="fas fa-trash"></i>
+                    Supprimer
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-user-friends"></i>
+            <h3>Aucun joueur inscrit</h3>
+            <p>Ajoutez le premier participant pour commencer le tournoi !</p>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Boîte de dialogue de confirmation -->
+<div class="overlay" id="overlay"></div>
+<div class="confirm-dialog" id="confirmDialog">
+    <h3><i class="fas fa-exclamation-triangle" style="color: #ff6666;"></i> Confirmation de suppression</h3>
+    <p>Êtes-vous sûr de vouloir supprimer <strong><span id="playerName"></span></strong> ?</p>
+    <p><i class="fas fa-info-circle"></i> Cette action supprimera également tous les matchs associés à ce joueur.</p>
+    <div class="dialog-buttons">
+        <button class="btn btn-primary" onclick="proceedDelete()">
+            <i class="fas fa-check"></i>
+            Confirmer
+        </button>
+        <button class="btn btn-cancel" onclick="cancelDelete()">
+            <i class="fas fa-times"></i>
+            Annuler
+        </button>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let deleteUrl = '';
+
+    function confirmDelete(username, url) {
+        document.getElementById('overlay').classList.add('show');
+        document.getElementById('confirmDialog').classList.add('show');
+        document.getElementById('playerName').textContent = username;
+        deleteUrl = url;
+    }
+
+    function proceedDelete() {
+        if (deleteUrl) {
+            // Animation de sortie
+            document.getElementById('confirmDialog').style.transform = 'translate(-50%, -50%) scale(0.8)';
+            setTimeout(() => {
+                window.location.href = deleteUrl;
+            }, 200);
+        }
+    }
+
+    function cancelDelete() {
+        document.getElementById('overlay').classList.remove('show');
+        document.getElementById('confirmDialog').classList.remove('show');
+        deleteUrl = '';
+    }
+
+    // Fermer la modal en cliquant sur l'overlay
+    document.getElementById('overlay').addEventListener('click', cancelDelete);
+
+    // Animation des cartes au chargement
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.participant-card');
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                card.style.transition = 'all 0.5s ease';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+        
+        // Animation des statistiques
+        const statNumbers = document.querySelectorAll('.stat-number');
+        statNumbers.forEach(stat => {
+            const finalValue = parseInt(stat.textContent);
+            let currentValue = 0;
+            const increment = Math.ceil(finalValue / 15);
+            
+            const counter = setInterval(() => {
+                currentValue += increment;
+                if (currentValue >= finalValue) {
+                    currentValue = finalValue;
+                    clearInterval(counter);
+                }
+                stat.textContent = currentValue;
+            }, 80);
+        });
+    });
+
+    // Validation du formulaire
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const input = this.querySelector('input[name="username"]');
+        const value = input.value.trim();
+        
+        if (value.length < 2) {
+            e.preventDefault();
+            input.style.borderColor = '#ff4444';
+            input.focus();
+            
+            setTimeout(() => {
+                input.style.borderColor = 'rgba(0, 255, 65, 0.3)';
+            }, 2000);
+        }
+    });
+</script>
+{% endblock %} 

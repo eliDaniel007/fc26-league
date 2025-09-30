@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block title %}Gérer les Joueurs - FC 26{% endblock %}
+
+{% block header_title %}🎮 Gestion des Joueurs FC 26 🎮{% endblock %}
+
+{% block content %}
+<div class="glass-card">
+    <h2 style="color: var(--fc-electric-blue); font-size: 2rem; margin-bottom: 1rem; text-align: center;">
+        <i class="fas fa-users-cog"></i>
+        Gestion des Joueurs FC 26
+    </h2>
+    <p style="text-align: center; color: rgba(255, 255, 255, 0.8); margin-bottom: 2rem;">
+        Gérez les 5 joueurs de votre ligue FC 26. Maximum 5 joueurs actifs autorisés.
+    </p>
+</div>
+
+<!-- Ajouter un nouveau joueur -->
+<div class="glass-card">
+    <h3 style="color: var(--fc-neon-green); font-size: 1.5rem; margin-bottom: 1rem;">
+        <i class="fas fa-user-plus"></i> Ajouter un Nouveau Joueur
+    </h3>
+    
+    <form method="POST" style="display: flex; gap: 1rem; align-items: end; flex-wrap: wrap;">
+        <div class="form-group" style="flex: 1; min-width: 200px; margin-bottom: 0;">
+            <label for="player_name" class="form-label">Nom du joueur</label>
+            <input type="text" 
+                   id="player_name" 
+                   name="player_name" 
+                   class="form-input" 
+                   placeholder="Entrez le nom du joueur"
+                   required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="height: fit-content;">
+            <i class="fas fa-plus"></i> Ajouter
+        </button>
+    </form>
+    
+    <div style="margin-top: 1rem; padding: 1rem; background: rgba(255, 107, 53, 0.1); border-left: 4px solid var(--fc-neon-orange); border-radius: 10px;">
+        <p style="margin: 0; color: var(--fc-neon-orange); font-size: 0.9rem;">
+            <i class="fas fa-info-circle"></i>
+            <strong>Note:</strong> Vous ne pouvez avoir que 5 joueurs actifs maximum. Si vous avez déjà 5 joueurs actifs, désactivez-en un avant d'en ajouter un nouveau.
+        </p>
+    </div>
+    
+    <!-- Bouton pour mettre à jour les noms -->
+    <div style="margin-top: 1rem; text-align: center;">
+        <a href="{{ url_for('update_player_names') }}" 
+           class="btn" 
+           style="background: linear-gradient(45deg, var(--fc-cyber-purple), var(--fc-plasma-pink)); 
+                  color: white; padding: 0.75rem 1.5rem;"
+           onclick="return confirm('Remplacer les pseudos génériques par les vrais noms (ABOUBACAR, DIOGO, LIONEL, CHERIF, ELI) ?')">
+            <i class="fas fa-user-edit"></i> Mettre à jour avec les vrais noms
+        </a>
+    </div>
+</div>
+
+<!-- Joueurs Actifs -->
+<div class="glass-card">
+    <h3 style="color: var(--fc-neon-green); font-size: 1.5rem; margin-bottom: 1rem;">
+        <i class="fas fa-futbol"></i> Joueurs Actifs ({{ active_players|length }}/5)
+    </h3>
+    
+    {% if active_players %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+        {% for player in active_players %}
+        <div style="background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 212, 255, 0.1)); 
+                    border: 2px solid var(--fc-neon-green); border-radius: 15px; padding: 1.5rem;
+                    transition: all 0.3s ease;" 
+             onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 25px rgba(0, 255, 136, 0.3)'"
+             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="width: 50px; height: 50px; background: linear-gradient(45deg, var(--fc-electric-blue), var(--fc-cyber-purple)); 
+                                border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-user" style="color: white; font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h4 style="color: white; margin: 0; font-size: 1.2rem;">{{ player.name }}</h4>
+                        <p style="color: var(--fc-neon-green); margin: 0; font-size: 0.9rem;">
+                            <i class="fas fa-check-circle"></i> Actif depuis {{ player.created_date.strftime('%d/%m/%Y') }}
+                        </p>
+                    </div>
+                </div>
+                <a href="{{ url_for('toggle_player', player_id=player.id) }}" 
+                   class="btn" 
+                   style="background: linear-gradient(45deg, rgba(255, 107, 53, 0.8), rgba(255, 20, 147, 0.8)); 
+                          color: white; padding: 0.5rem 1rem; font-size: 0.9rem;"
+                   onclick="return confirm('Désactiver {{ player.name }} ?')">
+                    <i class="fas fa-user-slash"></i> Désactiver
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    {% if active_players|length < 5 %}
+    <div style="padding: 1rem; background: rgba(0, 212, 255, 0.1); border-left: 4px solid var(--fc-electric-blue); border-radius: 10px;">
+        <p style="margin: 0; color: var(--fc-electric-blue);">
+            <i class="fas fa-plus-circle"></i>
+            <strong>{{ 5 - active_players|length }} places disponibles</strong> - Vous pouvez ajouter {{ 5 - active_players|length }} joueur(s) de plus.
+        </p>
+    </div>
+    {% else %}
+    <div style="padding: 1rem; background: rgba(255, 215, 0, 0.1); border-left: 4px solid var(--fc-gold); border-radius: 10px;">
+        <p style="margin: 0; color: var(--fc-gold);">
+            <i class="fas fa-crown"></i>
+            <strong>Équipe complète !</strong> Vous avez les 5 joueurs maximum. Système FC 26 prêt !
+        </p>
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <div style="text-align: center; padding: 3rem; background: rgba(255, 20, 147, 0.1); border-radius: 15px; border: 2px dashed var(--fc-plasma-pink);">
+        <i class="fas fa-users-slash" style="font-size: 3rem; color: var(--fc-plasma-pink); margin-bottom: 1rem;"></i>
+        <h4 style="color: var(--fc-plasma-pink); margin-bottom: 0.5rem;">Aucun joueur actif</h4>
+        <p style="color: rgba(255, 255, 255, 0.6);">Ajoutez vos 5 joueurs pour commencer la ligue FC 26 !</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Joueurs Inactifs -->
+{% if inactive_players %}
+<div class="glass-card">
+    <h3 style="color: var(--fc-silver); font-size: 1.5rem; margin-bottom: 1rem;">
+        <i class="fas fa-user-clock"></i> Joueurs Inactifs ({{ inactive_players|length }})
+    </h3>
+    <p style="color: rgba(255, 255, 255, 0.6); margin-bottom: 1.5rem;">
+        Ces joueurs peuvent être réactivés si vous avez de la place dans votre équipe.
+    </p>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+        {% for player in inactive_players %}
+        <div style="background: linear-gradient(135deg, rgba(192, 192, 192, 0.1), rgba(169, 169, 169, 0.1)); 
+                    border: 2px solid var(--fc-silver); border-radius: 15px; padding: 1.5rem;
+                    opacity: 0.7; transition: all 0.3s ease;" 
+             onmouseover="this.style.opacity='1'; this.style.transform='translateY(-5px)'"
+             onmouseout="this.style.opacity='0.7'; this.style.transform='translateY(0)'">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="width: 50px; height: 50px; background: linear-gradient(45deg, var(--fc-silver), var(--fc-carbon)); 
+                                border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-user-slash" style="color: white; font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h4 style="color: white; margin: 0; font-size: 1.2rem;">{{ player.name }}</h4>
+                        <p style="color: var(--fc-silver); margin: 0; font-size: 0.9rem;">
+                            <i class="fas fa-pause-circle"></i> Inactif
+                        </p>
+                    </div>
+                </div>
+                {% if active_players|length < 5 %}
+                <a href="{{ url_for('toggle_player', player_id=player.id) }}" 
+                   class="btn" 
+                   style="background: linear-gradient(45deg, var(--fc-neon-green), var(--fc-electric-blue)); 
+                          color: white; padding: 0.5rem 1rem; font-size: 0.9rem;"
+                   onclick="return confirm('Réactiver {{ player.name }} ?')">
+                    <i class="fas fa-user-check"></i> Réactiver
+                </a>
+                {% else %}
+                <span style="color: rgba(255, 255, 255, 0.4); font-size: 0.8rem; text-align: center;">
+                    <i class="fas fa-lock"></i><br>
+                    Équipe pleine
+                </span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Statistiques des joueurs -->
+<div class="glass-card">
+    <h3 style="color: var(--fc-cyber-purple); font-size: 1.5rem; margin-bottom: 1rem;">
+        <i class="fas fa-chart-bar"></i> Statistiques
+    </h3>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+        <div style="text-align: center; padding: 1.5rem; background: rgba(0, 212, 255, 0.1); border-radius: 15px; border: 2px solid var(--fc-electric-blue);">
+            <div style="font-size: 2.5rem; color: var(--fc-electric-blue); margin-bottom: 0.5rem;">
+                {{ active_players|length }}
+            </div>
+            <div style="color: white; font-weight: 600;">Joueurs Actifs</div>
+        </div>
+        
+        <div style="text-align: center; padding: 1.5rem; background: rgba(192, 192, 192, 0.1); border-radius: 15px; border: 2px solid var(--fc-silver);">
+            <div style="font-size: 2.5rem; color: var(--fc-silver); margin-bottom: 0.5rem;">
+                {{ inactive_players|length }}
+            </div>
+            <div style="color: white; font-weight: 600;">Joueurs Inactifs</div>
+        </div>
+        
+        <div style="text-align: center; padding: 1.5rem; background: rgba(0, 255, 136, 0.1); border-radius: 15px; border: 2px solid var(--fc-neon-green);">
+            <div style="font-size: 2.5rem; color: var(--fc-neon-green); margin-bottom: 0.5rem;">
+                {{ (active_players|length + inactive_players|length) }}
+            </div>
+            <div style="color: white; font-weight: 600;">Total Joueurs</div>
+        </div>
+        
+        <div style="text-align: center; padding: 1.5rem; background: rgba(255, 215, 0, 0.1); border-radius: 15px; border: 2px solid var(--fc-gold);">
+            <div style="font-size: 2.5rem; color: var(--fc-gold); margin-bottom: 0.5rem;">
+                {{ 5 - active_players|length }}
+            </div>
+            <div style="color: white; font-weight: 600;">Places Libres</div>
+        </div>
+    </div>
+</div>
+
+<!-- Aide et conseils -->
+<div class="glass-card">
+    <h3 style="color: var(--fc-plasma-pink); font-size: 1.5rem; margin-bottom: 1rem;">
+        <i class="fas fa-question-circle"></i> Comment ça marche ?
+    </h3>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+        <div style="padding: 1rem; background: rgba(0, 212, 255, 0.05); border-left: 4px solid var(--fc-electric-blue); border-radius: 10px;">
+            <h4 style="color: var(--fc-electric-blue); margin-bottom: 0.5rem;">
+                <i class="fas fa-users"></i> 5 Joueurs Maximum
+            </h4>
+            <p style="color: rgba(255, 255, 255, 0.8); margin: 0; font-size: 0.9rem;">
+                Comme dans une équipe FC, vous ne pouvez avoir que 5 joueurs actifs simultanément.
+            </p>
+        </div>
+        
+        <div style="padding: 1rem; background: rgba(0, 255, 136, 0.05); border-left: 4px solid var(--fc-neon-green); border-radius: 10px;">
+            <h4 style="color: var(--fc-neon-green); margin-bottom: 0.5rem;">
+                <i class="fas fa-calendar-week"></i> 4 Matchs par Semaine
+            </h4>
+            <p style="color: rgba(255, 255, 255, 0.8); margin: 0; font-size: 0.9rem;">
+                Chaque joueur actif joue exactement 4 matchs par semaine contre les autres.
+            </p>
+        </div>
+        
+        <div style="padding: 1rem; background: rgba(255, 20, 147, 0.05); border-left: 4px solid var(--fc-plasma-pink); border-radius: 10px;">
+            <h4 style="color: var(--fc-plasma-pink); margin-bottom: 0.5rem;">
+                <i class="fas fa-chart-line"></i> Classements
+            </h4>
+            <p style="color: rgba(255, 255, 255, 0.8); margin: 0; font-size: 0.9rem;">
+                Suivez les classements hebdomadaires et le classement général cumulé.
+            </p>
+        </div>
+        
+        <div style="padding: 1rem; background: rgba(255, 107, 53, 0.05); border-left: 4px solid var(--fc-neon-orange); border-radius: 10px;">
+            <h4 style="color: var(--fc-neon-orange); margin-bottom: 0.5rem;">
+                <i class="fas fa-futbol"></i> Moyenne de Buts
+            </h4>
+            <p style="color: rgba(255, 255, 255, 0.8); margin: 0; font-size: 0.9rem;">
+                La moyenne de buts compte dans le classement en plus des points et de la différence.
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+@media (max-width: 768px) {
+    .glass-card div[style*="display: grid"] {
+        grid-template-columns: 1fr !important;
+    }
+    
+    form {
+        flex-direction: column !important;
+    }
+    
+    .form-group {
+        min-width: auto !important;
+        margin-bottom: 1rem !important;
+    }
+}
+</style>
+{% endblock %}
